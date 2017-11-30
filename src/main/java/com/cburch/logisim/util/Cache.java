@@ -10,27 +10,34 @@ package com.cburch.logisim.util;
  * the creation of duplicate objects.
  */
 public class Cache {
-    private int mask;
-    private Object[] data;
+    private static final int LOG_MIN = 2;
+    private static final int LOG_MAX = 12;
+    private static final int LOG_DEFAULT = 8;
+
+    private static final String E_LOGSIZE =
+            "Invalid log size (" + LOG_MIN + ".." + LOG_MAX + "): ";
+
+    private final int mask;
+    private final Object[] data;
 
     /**
-     * Constructs an empty cache of log-size 8. That is, space
-     * for 2^8 elements.
+     * Constructs an empty cache of log-size {@value #LOG_DEFAULT}.
+     * That is, space for 2^{@value #LOG_DEFAULT} elements.
      */
     public Cache() {
-        this(8);
+        this(LOG_DEFAULT);
     }
 
     /**
      * Constructs an empty cache of the specified log-size. That is,
-     * space for 2^logSize elements. If the given size is greater than
-     * 12 it is clipped to 12.
+     * space for 2^logSize elements. The valid ranges are from
+     * {@value #LOG_MIN} to {@value #LOG_MAX}.
      *
      * @param logSize log size exponent
      */
     public Cache(int logSize) {
-        if (logSize > 12) {
-            logSize = 12;
+        if (logSize < LOG_MIN || logSize > LOG_MAX) {
+            throw new IllegalArgumentException(E_LOGSIZE + logSize);
         }
 
         data = new Object[1 << logSize];
@@ -51,7 +58,7 @@ public class Cache {
      * Puts an object into the cache for the given hash code.
      *
      * @param hashCode the hash code
-     * @param value the object to cache
+     * @param value    the object to cache
      */
     public void put(int hashCode, Object value) {
         if (value != null) {
@@ -79,5 +86,29 @@ public class Cache {
         }
         data[code] = value;
         return value;
+    }
+
+    @Override
+    public String toString() {
+        StringBuilder sb = new StringBuilder("Cache{");
+        sb.append("size=").append(mask + 1)
+                .append(", entries=").append(nonEmptyCount())
+                .append("}");
+        return sb.toString();
+    }
+
+    // allow unit tests to assert size and occupancy of cache
+    int size() {
+        return mask + 1;
+    }
+
+    int nonEmptyCount() {
+        int nonEmpty = 0;
+        for (int i = 0; i <= mask; i++) {
+            if (data[i] != null) {
+                nonEmpty++;
+            }
+        }
+        return nonEmpty;
     }
 }
