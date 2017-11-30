@@ -53,54 +53,51 @@ public class CollectionUtilTest extends AbstractTest {
     private Set<StarWars> union;
 
 
-    private Set<StarWars> mkUnion(Set<StarWars> a, Set<StarWars> b) {
-        return CollectionUtil.createUnmodifiableSetUnion(a, b);
+    private void mkUnion(Set<StarWars> a, Set<StarWars> b) {
+        union = CollectionUtil.createUnmodifiableSetUnion(a, b);
+        print(union);
     }
 
     @Test
     public void basic() {
         title("basic");
-        union = mkUnion(DROIDS, HEROES);
-        print(union);
+        mkUnion(DROIDS, HEROES);
         assertThat(union, is(not(equalTo(null))));
-        assertThat(union.size(), is(5));
         assertThat(union, hasItems(LEIA, LUKE, C3PO, HAN, R2D2));
+        assertThat(union.size(), is(5));
     }
 
     @Test(expected = NullPointerException.class)
     public void firstParamNull() {
-        union = mkUnion(null, VILLAIN);
+        mkUnion(null, VILLAIN);
     }
 
     @Test(expected = NullPointerException.class)
     public void secondParamNull() {
-        union = mkUnion(VILLAIN, null);
+        mkUnion(VILLAIN, null);
     }
 
     @Test
     public void emptySets() {
         title("empty sets");
-        union = mkUnion(EMPTY, EMPTY);
-        print(union);
-        assertThat(union.size(), is(0));
+        mkUnion(EMPTY, EMPTY);
         assertThat(union.iterator().hasNext(), is(false));
+        assertThat(union.size(), is(0));
     }
 
     @Test
     public void duplicateSets() {
         title("duplicate sets");
-        union = mkUnion(VILLAIN, VILLAIN);
-        print(union);
-        assertThat(union.size(), is(0));
+        mkUnion(VILLAIN, VILLAIN);
         assertThat(union, hasItems(VADER));
+        assertThat(union.size(), is(1));
     }
 
     @Test
     public void overlappingSets() {
         title("overlapping sets");
-        union = mkUnion(DROIDS, HOLOGRAM);
-        print("union of %s and %s ...", DROIDS, HOLOGRAM);
-        print(union);
+        mkUnion(DROIDS, HOLOGRAM);
+        print("... should be union of %s and %s", DROIDS, HOLOGRAM);
         assertThat(union, hasItems(LEIA, C3PO, R2D2));
         assertThat(union.size(), is(3));
     }
