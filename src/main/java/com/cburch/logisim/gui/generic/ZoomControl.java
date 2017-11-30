@@ -3,30 +3,19 @@
 
 package com.cburch.logisim.gui.generic;
 
-import static com.cburch.logisim.util.LocaleString.getFromLocale;
+import com.cburch.logisim.util.CustomAction;
 
-import java.awt.BorderLayout;
-import java.awt.Color;
-import java.awt.Dimension;
-import java.awt.Graphics;
+import javax.swing.*;
+import java.awt.*;
 import java.awt.event.KeyEvent;
 import java.awt.event.MouseEvent;
 import java.awt.event.MouseListener;
-import java.awt.event.MouseWheelEvent;
-import java.awt.event.MouseWheelListener;
 import java.beans.PropertyChangeEvent;
 import java.beans.PropertyChangeListener;
 
-import javax.swing.AbstractSpinnerModel;
-import javax.swing.Action;
-import javax.swing.ActionMap;
-import javax.swing.InputMap;
-import javax.swing.JComponent;
-import javax.swing.JPanel;
-import javax.swing.JSpinner;
-import javax.swing.KeyStroke;
-
-import com.cburch.logisim.util.CustomAction;
+import static com.cburch.logisim.util.CustomAction.KEY_ZOOM_IN;
+import static com.cburch.logisim.util.CustomAction.KEY_ZOOM_OUT;
+import static com.cburch.logisim.util.LocaleString.getFromLocale;
 
 @SuppressWarnings("serial")
 public class ZoomControl extends JPanel {
@@ -38,7 +27,9 @@ public class ZoomControl extends JPanel {
             double[] choices = model.getZoomOptions();
             double factor = zoom * 100.0 * 1.001;
             for (int i = 0; i < choices.length; i++) {
-                if (choices[i] > factor) return toString(choices[i]);
+                if (choices[i] > factor) {
+                    return toString(choices[i]);
+                }
             }
             return null;
         }
@@ -49,11 +40,13 @@ public class ZoomControl extends JPanel {
             double[] choices = model.getZoomOptions();
             double factor = zoom * 100.0 * 0.999;
             for (int i = choices.length - 1; i >= 0; i--) {
-                if (choices[i] < factor) return toString(choices[i]);
+                if (choices[i] < factor) {
+                    return toString(choices[i]);
+                }
             }
             return null;
         }
-        
+
         @Override
         public Object getValue() {
             double zoom = model.getZoomFactor();
@@ -74,12 +67,15 @@ public class ZoomControl extends JPanel {
         public void setValue(Object value) {
             if (value instanceof String) {
                 String s = (String) value;
-                if (s.endsWith("%")) s = s.substring(0, s.length() - 1);
+                if (s.endsWith("%")) {
+                    s = s.substring(0, s.length() - 1);
+                }
                 s = s.trim();
                 try {
                     double zoom = Double.parseDouble(s) / 100.0;
                     model.setZoomFactor(zoom);
-                } catch (NumberFormatException e) { }
+                } catch (NumberFormatException e) {
+                }
             }
         }
 
@@ -154,13 +150,13 @@ public class ZoomControl extends JPanel {
     private GridIcon grid;
 
     public void zoomIn() {
-    	spinnerModel.setValue(spinnerModel.getNextValue());
+        spinnerModel.setValue(spinnerModel.getNextValue());
     }
-    
+
     public void zoomOut() {
-    	spinnerModel.setValue(spinnerModel.getPreviousValue());
+        spinnerModel.setValue(spinnerModel.getPreviousValue());
     }
-    
+
     public ZoomControl(ZoomModel model) {
         super(new BorderLayout());
         this.model = model;
@@ -168,20 +164,20 @@ public class ZoomControl extends JPanel {
         spinnerModel = new SpinnerModel();
         spinner = new JSpinner();
         spinner.setModel(spinnerModel);
-        
+
         //Zooming with CTRL+/-
         InputMap im = this.getInputMap(ZoomControl.WHEN_IN_FOCUSED_WINDOW);
         ActionMap am = this.getActionMap();
         int mask = getToolkit().getMenuShortcutKeyMask();
-        im.put(KeyStroke.getKeyStroke(KeyEvent.VK_EQUALS, mask), "CTRL+");
-        am.put("CTRL+", new CustomAction("CTRL+", this));
-        im.put(KeyStroke.getKeyStroke(KeyEvent.VK_ADD, mask), "CTRL+");
-        am.put("CTRL+", new CustomAction("CTRL+", this));
-        im.put(KeyStroke.getKeyStroke(KeyEvent.VK_MINUS, mask), "CTRL-");
-        am.put("CTRL-", new CustomAction("CTRL-", this));
-        im.put(KeyStroke.getKeyStroke(KeyEvent.VK_SUBTRACT, mask), "CTRL-");
-        am.put("CTRL-", new CustomAction("CTRL-", this));
-        
+        im.put(KeyStroke.getKeyStroke(KeyEvent.VK_EQUALS, mask), KEY_ZOOM_IN);
+        am.put(KEY_ZOOM_IN, new CustomAction(KEY_ZOOM_IN, this));
+        im.put(KeyStroke.getKeyStroke(KeyEvent.VK_ADD, mask), KEY_ZOOM_IN);
+        am.put(KEY_ZOOM_IN, new CustomAction(KEY_ZOOM_IN, this));
+        im.put(KeyStroke.getKeyStroke(KeyEvent.VK_MINUS, mask), KEY_ZOOM_OUT);
+        am.put(KEY_ZOOM_OUT, new CustomAction(KEY_ZOOM_OUT, this));
+        im.put(KeyStroke.getKeyStroke(KeyEvent.VK_SUBTRACT, mask), KEY_ZOOM_OUT);
+        am.put(KEY_ZOOM_OUT, new CustomAction(KEY_ZOOM_OUT, this));
+
         this.add(spinner, BorderLayout.CENTER);
 
         grid = new GridIcon();
@@ -190,7 +186,6 @@ public class ZoomControl extends JPanel {
 
         model.addPropertyChangeListener(ZoomModel.SHOW_GRID, grid);
         model.addPropertyChangeListener(ZoomModel.ZOOM, spinnerModel);
-
     }
 
     public void setZoomModel(ZoomModel value) {
