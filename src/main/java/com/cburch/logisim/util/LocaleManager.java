@@ -41,7 +41,7 @@ public class LocaleManager {
     private static Locale curLocale = null;
 
     private final String dirName;
-    private final String bundleName;
+    private final String baseName;
 
     private ResourceBundle settings = null;
     private ResourceBundle locale = null;
@@ -49,14 +49,14 @@ public class LocaleManager {
 
 
     /**
-     * Creates a locale manager instance for the given directory and bundle.
+     * Creates a locale manager instance for the given directory and base name.
      *
-     * @param dirName    the directory containing bundles
-     * @param bundleName the name of the bundle
+     * @param dirName  the directory containing bundles
+     * @param baseName the base name of the bundle
      */
-    public LocaleManager(String dirName, String bundleName) {
+    public LocaleManager(String dirName, String baseName) {
         this.dirName = dirName;
-        this.bundleName = bundleName;
+        this.baseName = baseName;
         loadDefault();
         managers.add(this);
     }
@@ -92,15 +92,13 @@ public class LocaleManager {
             loadLocale(choices[0]);
         }
 
-        if (locale != null) {
-            return;
+        if (locale == null) {
+            throw new RuntimeException("No locale bundles are available");
         }
-
-        throw new RuntimeException("No locale bundles are available");
     }
 
     private void loadLocale(Locale loc) {
-        String bundleName = dirName + "/" + loc.getLanguage() + "/" + this.bundleName;
+        String bundleName = dirName + "/" + loc.getLanguage() + "/" + baseName;
         locale = getBundle(bundleName, loc);
     }
 
@@ -127,7 +125,7 @@ public class LocaleManager {
             ResourceBundle backup = defaultLocale;
             if (backup == null) {
                 Locale backupLocale = Locale.US;
-                backup = getBundle(dirName + "/en/" + bundleName, backupLocale);
+                backup = getBundle(dirName + "/en/" + baseName, backupLocale);
                 defaultLocale = backup;
             }
             try {
@@ -144,23 +142,12 @@ public class LocaleManager {
         return ret;
     }
 
-    // TODO: delete -- only used below
-    public String getter(String key) {
-        return get(key);
-    }
-
-    // TODO: delete after confirming this is not used anywhere
-    public String getter(String key, String arg) {
-        return StringUtil.formatter(getter(key), arg);
-    }
-
-
     /**
      * Returns an array of available locales.
      *
      * @return array of available locales
      */
-    public Locale[] getFromLocaleOptions() {
+    Locale[] getFromLocaleOptions() {
         String locs = null;
         try {
             if (settings != null) {
@@ -196,13 +183,13 @@ public class LocaleManager {
         return retl.toArray(new Locale[retl.size()]);
     }
 
-     /**
+    /**
      * Returns a locale selector component, populated with the available
      * locales.
      *
      * @return a locale selector component
      */
-    public JComponent createLocaleSelector() {
+    JComponent createLocaleSelector() {
         Locale[] locales = getFromLocaleOptions();
         if (locales == null || locales.length == 0) {
             Locale cur = getFromLocale();
