@@ -21,20 +21,20 @@ public class Dag<E> {
 
     // represents a node in the DAG
     private static class Node<E> {
-        E data;
+        private final Set<Node<E>> successors = new HashSet<>();
 
-        // of Nodes
-        private final Set<Node<E>> succs = new HashSet<>();
-        int numPreds = 0;
-        boolean mark;
+        private E data;
 
-        Node(E data) {
+        private int numPredecessors = 0;
+        private boolean mark;
+
+        private Node(E data) {
             this.data = data;
         }
 
         @Override
         public String toString() {
-            return String.valueOf(data) + "->" + succs;
+            return String.valueOf(data) + "->" + successors;
         }
     }
 
@@ -49,7 +49,7 @@ public class Dag<E> {
      */
     public boolean hasPredecessors(E data) {
         Node<E> from = findNode(data);
-        return from != null && from.numPreds != 0;
+        return from != null && from.numPredecessors != 0;
     }
 
     /**
@@ -61,7 +61,7 @@ public class Dag<E> {
      */
     public boolean hasSuccessors(E data) {
         Node<E> to = findNode(data);
-        return to != null && !to.succs.isEmpty();
+        return to != null && !to.successors.isEmpty();
     }
 
     /**
@@ -96,15 +96,15 @@ public class Dag<E> {
             return false;
         }
 
-        Node<E> src = createNode(srcData);
-        Node<E> dst = createNode(dstData);
+        Node<E> src = findOrCreateNode(srcData);
+        Node<E> dst = findOrCreateNode(dstData);
         if (src == null || dst == null) {
             return false;
         }
 
         // add since not already present
-        if (src.succs.add(dst)) {
-            ++dst.numPreds;
+        if (src.successors.add(dst)) {
+            ++dst.numPredecessors;
         }
 
         return true;
@@ -122,17 +122,17 @@ public class Dag<E> {
         Node<E> src = findNode(srcData);
         Node<E> dst = findNode(dstData);
 
-        if (src == null || dst == null || !src.succs.remove(dst)) {
+        if (src == null || dst == null || !src.successors.remove(dst)) {
             return false;
         }
 
 
-        --dst.numPreds;
-        if (dst.numPreds == 0 && dst.succs.isEmpty()) {
+        --dst.numPredecessors;
+        if (dst.numPredecessors == 0 && dst.successors.isEmpty()) {
             nodes.remove(dstData);
         }
 
-        if (src.numPreds == 0 && src.succs.isEmpty()) {
+        if (src.numPredecessors == 0 && src.successors.isEmpty()) {
             nodes.remove(srcData);
         }
 
@@ -150,19 +150,19 @@ public class Dag<E> {
             return;
         }
 
-        for (Iterator<Node<E>> it = n.succs.iterator(); it.hasNext(); ) {
+        for (Iterator<Node<E>> it = n.successors.iterator(); it.hasNext(); ) {
             Node<E> succ = it.next();
-            --(succ.numPreds);
-            if (succ.numPreds == 0 && succ.succs.isEmpty()) {
+            --(succ.numPredecessors);
+            if (succ.numPredecessors == 0 && succ.successors.isEmpty()) {
                 it.remove();
             }
 
         }
 
-        if (n.numPreds > 0) {
+        if (n.numPredecessors > 0) {
             for (Iterator<Node<E>> it = nodes.values().iterator(); it.hasNext(); ) {
                 Node<E> q = it.next();
-                if (q.succs.remove(n) && q.numPreds == 0 && q.succs.isEmpty()) {
+                if (q.successors.remove(n) && q.numPredecessors == 0 && q.successors.isEmpty()) {
                     it.remove();
                 }
             }
@@ -175,33 +175,29 @@ public class Dag<E> {
     }
 
     private Node<E> findNode(E data) {
-        if (data == null) {
-            return null;
-        }
-
         return nodes.get(data);
     }
 
-    private Node<E> createNode(E data) {
-        Node<E> ret = findNode(data);
-        if (ret != null) {
-            return ret;
+    private Node<E> findOrCreateNode(E data) {
+        Node<E> node = findNode(data);
+        if (node != null) {
+            return node;
         }
 
         if (data == null) {
             return null;
         }
 
-        ret = new Node<>(data);
-        nodes.put(data, ret);
-        return ret;
+        node = new Node<>(data);
+        nodes.put(data, node);
+        return node;
     }
 
     private boolean canFollow(Node<E> query, Node<E> base) {
+        // note: query and base are guaranteed to be non-null
         if (base == query) {
             return false;
         }
-
 
         // mark all as unvisited
         for (Node<E> n : nodes.values()) {
@@ -215,7 +211,7 @@ public class Dag<E> {
         fringe.add(query);
         while (!fringe.isEmpty()) {
             Node<E> n = fringe.removeFirst();
-            for (Node<E> next : n.succs) {
+            for (Node<E> next : n.successors) {
                 if (!next.mark) {
                     if (next == base) {
                         return false;
