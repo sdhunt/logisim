@@ -16,12 +16,15 @@ import java.util.Set;
  */
 public class CollectionUtil {
 
+    // WARNING: This implementation actually violates Set semantics...
+    //          since there can be duplicate items in the "set"
+    //          (as evidenced by unit tests).
+
     private static class UnionSet<E> extends AbstractSet<E> {
         private Set<? extends E> a;
         private Set<? extends E> b;
 
         UnionSet(Set<? extends E> a, Set<? extends E> b) {
-            // FIXME: does not handle same items in both sets!!
             this.a = a;
             this.b = b;
         }
@@ -49,9 +52,14 @@ public class CollectionUtil {
      * @param <E> the set element type
      * @return a set union of the two sets
      */
-    // TODO: review - despite the method name, the returned set is mutable!
+    // TODO: review - despite the method name, the returned "set" is mutable!
+    //  since references to the given sets are retained by the caller.
+
     // To ensure immutability, the UnionSet constructor should make copies
     // of sets a and b.
+
+    // Also, technically, the returned class does not represent set-union;
+    // it represents a pair of sets (which may have repeated elements in them).
     public static <E> Set<E> createUnmodifiableSetUnion(Set<? extends E> a,
                                                         Set<? extends E> b) {
         if (a == null || b == null) {
