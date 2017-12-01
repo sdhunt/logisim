@@ -1,22 +1,27 @@
-/* Copyright (c) 2010, Carl Burch. License information is located in the
- * com.cburch.logisim.Main source code and at www.cburch.com/logisim/. */
+/*
+ * Copyright (c) 2010, Carl Burch. License information is located in the
+ * com.cburch.logisim.Main source code and at www.cburch.com/logisim/.
+ */
 
 package com.cburch.logisim.util;
-
-import java.util.Locale;
-import javax.swing.DefaultListModel;
-import javax.swing.JList;
-import javax.swing.ListSelectionModel;
-import javax.swing.SwingUtilities;
-import javax.swing.event.ListSelectionEvent;
-import javax.swing.event.ListSelectionListener;
 
 import com.cburch.logisim.prefs.AppPreferences;
 import com.cburch.logisim.util.LocaleSelector.LocaleOption;
 
-@SuppressWarnings("serial")
+import javax.swing.*;
+import javax.swing.event.ListSelectionEvent;
+import javax.swing.event.ListSelectionListener;
+import java.util.Locale;
+
+/**
+ * Component that allows selection of an available locale.
+ */
 class LocaleSelector extends JList<LocaleOption>
-            implements LocaleListener, ListSelectionListener {
+        implements LocaleListener, ListSelectionListener {
+
+    /**
+     * A single locale option.
+     */
     protected static class LocaleOption implements Runnable {
         private Locale locale;
         private String text;
@@ -49,9 +54,14 @@ class LocaleSelector extends JList<LocaleOption>
 
     private LocaleOption[] items;
 
+    /**
+     * Creates a locale selector for the given locales.
+     *
+     * @param locales the locales with which to populate the list
+     */
     LocaleSelector(Locale[] locales) {
         setSelectionMode(ListSelectionModel.SINGLE_SELECTION);
-        DefaultListModel<LocaleOption> model = new DefaultListModel<LocaleOption>();
+        DefaultListModel<LocaleOption> model = new DefaultListModel<>();
         items = new LocaleOption[locales.length];
         for (int i = 0; i < locales.length; ++i) {
             items[i] = new LocaleOption(locales[i]);
@@ -68,12 +78,11 @@ class LocaleSelector extends JList<LocaleOption>
     public void localeChanged() {
         Locale current = LocaleManager.getFromLocale();
         LocaleOption sel = null;
-        for (int i = 0; i < items.length; ++i) {
-            items[i].update(current);
-            if (current.equals(items[i].locale)) {
-                sel = items[i];
+        for (LocaleOption item : items) {
+            item.update(current);
+            if (current.equals(item.locale)) {
+                sel = item;
             }
-
         }
         if (sel != null) {
             setSelectedValue(sel, true);
@@ -82,7 +91,7 @@ class LocaleSelector extends JList<LocaleOption>
 
     @Override
     public void valueChanged(ListSelectionEvent e) {
-        LocaleOption opt = (LocaleOption) getSelectedValue();
+        LocaleOption opt = getSelectedValue();
         if (opt != null) {
             SwingUtilities.invokeLater(opt);
         }

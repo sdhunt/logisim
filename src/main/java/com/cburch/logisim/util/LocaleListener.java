@@ -1,8 +1,17 @@
-/* Copyright (c) 2010, Carl Burch. License information is located in the
- * com.cburch.logisim.Main source code and at www.cburch.com/logisim/. */
+/*
+ * Copyright (c) 2010, Carl Burch. License information is located in the
+ * com.cburch.logisim.Main source code and at www.cburch.com/logisim/.
+ */
 
 package com.cburch.logisim.util;
 
+/**
+ * Entity that listens for locale events.
+ */
 public interface LocaleListener {
-    public void localeChanged();
+
+    /**
+     * Invoked when the locale is changed.
+     */
+    void localeChanged();
 }
