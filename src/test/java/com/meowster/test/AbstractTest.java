@@ -15,6 +15,11 @@ import static com.meowster.util.StringUtils.EOL;
  */
 public abstract class AbstractTest {
 
+    /**
+     * Enumeration useful for collection testing.
+     */
+    public enum StarWars {LUKE, LEIA, HAN, C3PO, R2D2, VADER}
+
     protected void print(String s) {
         StringUtils.print(s);
     }

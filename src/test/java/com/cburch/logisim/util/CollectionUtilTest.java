@@ -14,12 +14,12 @@ import java.util.Collections;
 import java.util.HashSet;
 import java.util.Set;
 
-import static com.cburch.logisim.util.CollectionUtilTest.StarWars.C3PO;
-import static com.cburch.logisim.util.CollectionUtilTest.StarWars.HAN;
-import static com.cburch.logisim.util.CollectionUtilTest.StarWars.LEIA;
-import static com.cburch.logisim.util.CollectionUtilTest.StarWars.LUKE;
-import static com.cburch.logisim.util.CollectionUtilTest.StarWars.R2D2;
-import static com.cburch.logisim.util.CollectionUtilTest.StarWars.VADER;
+import static com.meowster.test.AbstractTest.StarWars.C3PO;
+import static com.meowster.test.AbstractTest.StarWars.HAN;
+import static com.meowster.test.AbstractTest.StarWars.LEIA;
+import static com.meowster.test.AbstractTest.StarWars.LUKE;
+import static com.meowster.test.AbstractTest.StarWars.R2D2;
+import static com.meowster.test.AbstractTest.StarWars.VADER;
 import static org.hamcrest.CoreMatchers.equalTo;
 import static org.hamcrest.CoreMatchers.hasItems;
 import static org.hamcrest.CoreMatchers.is;
@@ -30,8 +30,6 @@ import static org.hamcrest.MatcherAssert.assertThat;
  * Unit tests for {@link CollectionUtil}.
  */
 public class CollectionUtilTest extends AbstractTest {
-
-    enum StarWars {LUKE, LEIA, HAN, C3PO, R2D2, VADER}
 
     private static final Set<StarWars> HEROES = new HashSet<>(
             Arrays.asList(LUKE, LEIA, HAN)

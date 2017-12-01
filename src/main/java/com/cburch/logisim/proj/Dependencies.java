@@ -80,7 +80,7 @@ public class Dependencies {
     }
 
     private MyListener myListener = new MyListener();
-    private Dag depends = new Dag();
+    private Dag<Circuit> depends = new Dag<>();
 
     Dependencies(LogisimFile file) {
         addDependencies(file);
