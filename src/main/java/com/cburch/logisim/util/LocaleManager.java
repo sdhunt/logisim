@@ -51,14 +51,19 @@ public class LocaleManager {
     /**
      * Creates a locale manager instance for the given directory and base name.
      *
-     * @param dirName  the directory containing bundles
-     * @param baseName the base name of the bundle
+     * @param dirName the directory containing bundles
+     * @param section the bundle section
      */
-    public LocaleManager(String dirName, String baseName) {
+    public LocaleManager(String dirName, LocaleSection section) {
         this.dirName = dirName;
-        this.baseName = baseName;
+        this.baseName = section.toString();
         loadDefault();
         managers.add(this);
+    }
+
+    @Override
+    public String toString() {
+        return "LocaleManager{" + locale.getBaseBundleName() + "}";
     }
 
     private void loadDefault() {

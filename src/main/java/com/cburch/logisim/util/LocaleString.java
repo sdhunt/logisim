@@ -20,26 +20,26 @@ import static org.slf4j.LoggerFactory.getLogger;
  * @author Joey Lawrance
  */
 public class LocaleString {
+    private static final String LOGISIM = "logisim";
 
     private static final Logger logger = getLogger(LocaleString.class);
-
-    private static LocaleString self = null;
-
-    // TODO: Are sections referenced anywhere else? Should be enum perhaps?
-    private String[] sections = ("analyze circuit data draw file gui hex " +
-            "log menu opts prefs proj start std tools util").split(" ");
+    private static final LocaleString self = new LocaleString();
 
     private final Map<String, LocaleManager> sourceMap = new HashMap<>();
 
     private LocaleManager util;
 
     private LocaleString() {
-        for (String section : sections) {
-            LocaleManager manager = new LocaleManager("logisim", section);
+        initSourceMap();
+    }
+
+    private void initSourceMap() {
+        for (LocaleSection section : LocaleSection.values()) {
+            LocaleManager manager = new LocaleManager(LOGISIM, section);
             for (String key : manager.getKeys()) {
                 sourceMap.put(key, manager);
             }
-            if (section.equals("util")) {
+            if (section.equals(LocaleSection.UTIL)) {
                 util = manager;
             }
         }
@@ -51,14 +51,7 @@ public class LocaleString {
      * @return the 'util' locale manager
      */
     static LocaleManager getUtilLocaleManager() {
-        return getInstance().util;
-    }
-
-    private static LocaleString getInstance() {
-        if (self == null) {
-            self = new LocaleString();
-        }
-        return self;
+        return self.util;
     }
 
     /**
@@ -91,7 +84,7 @@ public class LocaleString {
      * @return the associated localized text
      */
     public static String getFromLocale(String key) {
-        LocaleManager localeManager = getInstance().sourceMap.get(key);
+        LocaleManager localeManager = self.sourceMap.get(key);
         if (localeManager == null) {
             logger.error("Could not get string \"" + key + "\".");
             return key;
@@ -110,5 +103,15 @@ public class LocaleString {
      */
     public static String getFromLocale(String key, String... args) {
         return String.format(getFromLocale(key), (Object[]) args);
+    }
+
+
+    // for unit testing
+    static void clearSourceMap() {
+        self.sourceMap.clear();
+    }
+
+    static void reInitSourceMap() {
+        self.initSourceMap();
     }
 }
