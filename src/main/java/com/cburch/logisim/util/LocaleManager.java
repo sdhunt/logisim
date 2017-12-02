@@ -31,6 +31,7 @@ public class LocaleManager {
      */
 
     private static final String SETTINGS_NAME = "settings";
+    private static final String SLASH = "/";
 
     private static List<LocaleManager> managers = new ArrayList<>();
     private static List<LocaleListener> listeners = new ArrayList<>();
@@ -41,7 +42,7 @@ public class LocaleManager {
     private static Locale curLocale = null;
 
     private final String dirName;
-    private final String baseName;
+    private final LocaleSection section;
 
     private ResourceBundle settings = null;
     private ResourceBundle locale = null;
@@ -49,14 +50,14 @@ public class LocaleManager {
 
 
     /**
-     * Creates a locale manager instance for the given directory and base name.
+     * Creates a locale manager for the given directory and section.
      *
      * @param dirName the directory containing bundles
      * @param section the bundle section
      */
     public LocaleManager(String dirName, LocaleSection section) {
         this.dirName = dirName;
-        this.baseName = section.toString();
+        this.section = section;
         loadDefault();
         managers.add(this);
     }
@@ -102,9 +103,13 @@ public class LocaleManager {
         }
     }
 
+
+    private String mkBundleName(Locale loc) {
+        return dirName + SLASH + loc.getLanguage() + SLASH + section;
+    }
+
     private void loadLocale(Locale loc) {
-        String bundleName = dirName + "/" + loc.getLanguage() + "/" + baseName;
-        locale = getBundle(bundleName, loc);
+        locale = getBundle(mkBundleName(loc), loc);
     }
 
     /**
@@ -126,15 +131,16 @@ public class LocaleManager {
         String ret;
         try {
             ret = locale.getString(key);
+
         } catch (MissingResourceException e) {
             ResourceBundle backup = defaultLocale;
             if (backup == null) {
-                Locale backupLocale = Locale.US;
-                backup = getBundle(dirName + "/en/" + baseName, backupLocale);
+                backup = getBundle(mkBundleName(Locale.US), Locale.US);
                 defaultLocale = backup;
             }
             try {
                 ret = backup.getString(key);
+
             } catch (MissingResourceException e2) {
                 ret = key;
             }
