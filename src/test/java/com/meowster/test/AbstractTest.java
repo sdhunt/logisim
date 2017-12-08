@@ -16,6 +16,11 @@ import static com.meowster.util.StringUtils.EOL;
 public abstract class AbstractTest {
 
     /**
+     * Tolerance for double comparisons.
+     */
+    protected static final double TOLERANCE = 1e-9;
+
+    /**
      * Enumeration useful for collection testing.
      */
     public enum StarWars {LUKE, LEIA, HAN, C3PO, R2D2, VADER}
