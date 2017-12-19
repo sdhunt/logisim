@@ -134,6 +134,7 @@ public class ComponentDrawContext {
         GraphicsUtil.switchToWidth(g, 2);
         g.drawRect(x, y, width, height);
         if (label != null && !label.equals("")) {
+            // TODO: clean-up this hard-coded font!!
             g.setFont(new Font(Font.SANS_SERIF, Font.PLAIN, 10));
             FontMetrics fm = base.getFontMetrics(g.getFont());
             int lwid = fm.stringWidth(label);

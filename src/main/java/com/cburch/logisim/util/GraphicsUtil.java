@@ -67,15 +67,22 @@ public class GraphicsUtil {
 
     /**
      * Draws an arc on the given graphics context, centered at the point
-     * (x,y), with radius r, starting at the specified angle, for the
-     * specified distance.
+     * (x,y), with radius r, starting at the specified angle (in degrees),
+     * for the specified distance (in degrees).
+     * <p>
+     * For example, the following will draw an arc starting at the 12 o'clock
+     * position, drawing counter-clockwise to the 6 o'clock position, centered
+     * at [100,100] with a radius of 50.
+     * <pre>
+     *     GraphicsUtil.drawCenteredArc(g2, 100, 100, 50, 90, 180);
+     * </pre>
      *
      * @param g     the graphics context
      * @param x     the center point x-coordinate
      * @param y     the center point y-coordinate
      * @param r     the arc radius
-     * @param start the start angle
-     * @param dist  the distance around the arc
+     * @param start the start angle (degrees)
+     * @param dist  the distance around the arc (degrees)
      * @see Graphics#drawArc(int, int, int, int, int, int)
      */
     public static void drawCenteredArc(Graphics g, int x, int y,
@@ -176,9 +183,12 @@ public class GraphicsUtil {
     }
 
     /**
-     * Draws the specified text on the given graphics context, in the given
-     * font, at location (x,y) with the specified alignment. If font is null,
-     * the context's current font will be used.
+     * Draws the specified text on the given graphics context,
+     * at location (x,y) with the specified alignment.
+     * <p>
+     * If font is not null, it is set on the graphics context, but the
+     * {@link #drawText(Graphics, String, int, int, int, int)} call
+     * immediately overwrites that with sans-serif/plain/10.
      *
      * @param g      the graphics context
      * @param font   the font (may be null)
@@ -203,8 +213,10 @@ public class GraphicsUtil {
     }
 
     /**
-     * Draws the specified text on the given graphics context, (in the context's
-     * current font), at location (x,y) with the specified alignment.
+     * Draws the specified text on the given graphics context,
+     * at location (x,y) with the specified alignment.
+     * <p>
+     * NOTE: font has been hard-wired to sans-serif/plain/10.
      *
      * @param g      the graphics context
      * @param text   the text to draw
@@ -220,13 +232,16 @@ public class GraphicsUtil {
         }
 
         Rectangle bd = getTextBounds(g, text, x, y, halign, valign);
+        // TODO: clean-up this hard-coded font!!
         g.setFont(new Font(Font.SANS_SERIF, Font.PLAIN, 10));
         g.drawString(text, bd.x, bd.y + g.getFontMetrics().getAscent());
     }
 
     /**
-     * Draws the specified text on the given graphic context, (in the context's
-     * current font), centered at location (x,y).
+     * Draws the specified text on the given graphic context,
+     * centered at location (x,y).
+     * <p>
+     * NOTE: font has been hard-wired to sans-serif/plain/10.
      *
      * @param g    the graphics context
      * @param text the text to draw
@@ -240,7 +255,7 @@ public class GraphicsUtil {
     /**
      * Draws an arrow on the given graphics context with the main shaft of the
      * arrow defined by the line (x0,y0) to (x1,y1), and the arrow head at the
-     * latter end with the specified length and angle.
+     * latter end with the specified length and angle (in degrees).
      *
      * @param g          the graphics context
      * @param x0         the x-coordinate of the arrow tail
@@ -248,7 +263,7 @@ public class GraphicsUtil {
      * @param x1         the x-coordinate of the arrow head
      * @param y1         the y-coordinate of the arrow head
      * @param headLength the arrow head length
-     * @param headAngle  the arrow head angle
+     * @param headAngle  the arrow head angle between main shaft and segment
      */
     public static void drawArrow(Graphics g, int x0, int y0, int x1, int y1,
                                  int headLength, int headAngle) {

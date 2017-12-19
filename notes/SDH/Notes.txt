@@ -1,0 +1,12 @@
+=============
+Simon's Notes
+=============
+
+3/31/14 Heid
+
+Hardwired font??  new Font(Font.SANS_SERIF, Font.PLAIN, 10)
+
+GraphicsUtil.drawText()                 -- line 230
+ComponentDrawContext.drawRectangle()    -- line 137
+
+

@@ -1,0 +1,30 @@
+Discovered Bugs
+---------------
+
+* Select label causes MissingResourceException
+    - select a label and click on Font in Properties panel
+
+    Exception in thread "AWT-EventQueue-0" java.util.MissingResourceException: Can't find bundle for base name resources/connectina/JFontChooser, locale en
+    	at java.util.ResourceBundle.throwMissingResourceException(ResourceBundle.java:1564)
+    	at java.util.ResourceBundle.getBundleImpl(ResourceBundle.java:1387)
+    	at java.util.ResourceBundle.getBundle(ResourceBundle.java:773)
+    	at com.connectina.swing.fontchooser.JFontChooser.getBundle(JFontChooser.java:61)
+    	at com.connectina.swing.fontchooser.JFontChooser.<init>(JFontChooser.java:98)
+    	at com.connectina.swing.fontchooser.JFontChooser.<init>(JFontChooser.java:87)
+    	at com.cburch.logisim.data.Attributes$FontChooser.<init>(Attributes.java:409)
+    	at com.cburch.logisim.data.Attributes$FontAttribute.getCellEditor(Attributes.java:402)
+    	at com.cburch.logisim.data.Attributes$FontAttribute.getCellEditor(Attributes.java:372)
+    	at com.cburch.logisim.data.Attribute.getCellEditor(Attribute.java:33)
+    	at com.cburch.logisim.gui.generic.AttributeSetTableModel$AttrRow.getEditor(AttributeSetTableModel.java:56)
+    	at com.cburch.logisim.gui.generic.AttrTable$CellEditor.getTableCellEditorComponent(AttrTable.java:342)
+    	at javax.swing.JTable.prepareEditor(JTable.java:5778)
+    	at javax.swing.JTable.editCellAt(JTable.java:3512)
+    	at javax.swing.plaf.basic.BasicTableUI$Handler.adjustSelection(BasicTableUI.java:1108)
+    	at javax.swing.plaf.basic.BasicTableUI$Handler.mousePressed(BasicTableUI.java:1038)
+    	at javax.swing.plaf.basic.BasicTableUI$MouseInputHandler.mousePressed(BasicTableUI.java:798)
+
+
+
+
+Saving file:
+Warning: Could not get charToByteConverterClass!

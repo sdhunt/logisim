@@ -94,6 +94,7 @@ public class GraphicsUtilTest extends AbstractTest {
     }
 
     private TestCanvas canvas;
+    private Graphics2D g2;
 
     private int tenth(int i) {
         return CANVAS_DIM / 10 * i;
@@ -115,6 +116,7 @@ public class GraphicsUtilTest extends AbstractTest {
     @Before
     public void setUp() {
         canvas = new TestCanvas();
+        g2 = canvas.g2;
     }
 
 
@@ -130,17 +132,61 @@ public class GraphicsUtilTest extends AbstractTest {
     @Test
     public void switchingStrokeWidth() {
         title("switch stroke width");
-        canvas.g2.drawLine(T1, QTR, T9, QTR);
-        GraphicsUtil.switchToWidth(canvas.g2, 3);
-        canvas.g2.drawLine(T1, HALF, T9, HALF);
-        GraphicsUtil.switchToWidth(canvas.g2, 5);
-        canvas.g2.drawLine(T1, TQTR, T9, TQTR);
+        g2.drawLine(T1, QTR, T9, QTR);
+        GraphicsUtil.switchToWidth(g2, 3);
+        g2.drawLine(T1, HALF, T9, HALF);
+        GraphicsUtil.switchToWidth(g2, 5);
+        g2.drawLine(T1, TQTR, T9, TQTR);
 
-        canvas.g2.setColor(Color.BLUE);
+        g2.setColor(Color.BLUE);
         for (int i = 1; i <= 9; i++) {
-            GraphicsUtil.switchToWidth(canvas.g2, i);
-            canvas.g2.drawLine(tenth(i), QTR, tenth(i), TQTR);
+            GraphicsUtil.switchToWidth(g2, i);
+            g2.drawLine(tenth(i), QTR, tenth(i), TQTR);
         }
+        showCanvasBriefly();
+    }
+
+    @Ignore(DONT_RUN)
+    @Test
+    public void drawCenteredArc() {
+        title("draw centered arc");
+        GraphicsUtil.switchToWidth(g2, 5);
+        GraphicsUtil.drawCenteredArc(g2, HALF, HALF, QTR, 90, 270);
+        showCanvasBriefly();
+    }
+
+    @Ignore(DONT_RUN)
+    @Test
+    public void textStuff() {
+        title("draw text and get bounds");
+        String text = "FooBar";
+
+        Font font = g2.getFont().deriveFont(40.0f);
+
+        GraphicsUtil.drawText(g2, font, text, HALF, HALF,
+                              GraphicsUtil.H_LEFT,
+                              GraphicsUtil.V_BASELINE);
+
+        Rectangle r = GraphicsUtil.getTextBounds(g2, font, text, HALF, HALF,
+                                                 GraphicsUtil.H_LEFT,
+                                                 GraphicsUtil.V_BASELINE);
+        g2.setColor(Color.RED);
+        g2.draw(r);
+        showCanvasBriefly();
+
+        /*
+         * UGH!! This demonstrates that the font has been hard-wired to
+         *       sans-serif/plain/10, and totally ignores the font set
+         *       on the graphics context!!
+         */
+    }
+
+    @Ignore(DONT_RUN)
+    @Test
+    public void drawArrow() {
+        title("draw an arrow");
+        GraphicsUtil.switchToWidth(g2, 3);
+        GraphicsUtil.drawArrow(g2, QTR, QTR, TQTR, TQTR, 20, 30);
         showCanvasBriefly();
     }
 }
