@@ -32,6 +32,9 @@ public class SplitPaneTest extends AbstractGraphicsTest {
     private Box one;
     private Box two;
 
+    private HorizontalSplitPane hsp;
+    private VerticalSplitPane vsp;
+
     @Before
     public void setUp() {
         one = mkBox(SIZE, SIZE, Color.RED);
@@ -41,7 +44,7 @@ public class SplitPaneTest extends AbstractGraphicsTest {
     @Ignore(DONT_RUN)
     @Test
     public void horizontal() {
-        HorizontalSplitPane hsp = new HorizontalSplitPane(one, two, 0.5);
+        hsp = new HorizontalSplitPane(one, two, 0.5);
         frame = new ClosableTestFrame(hsp);
         frame.displayMe();
     }
@@ -49,7 +52,7 @@ public class SplitPaneTest extends AbstractGraphicsTest {
     @Ignore(DONT_RUN)
     @Test
     public void vertical() {
-        VerticalSplitPane vsp = new VerticalSplitPane(one, two, 0.5);
+        vsp = new VerticalSplitPane(one, two, 0.5);
         frame = new ClosableTestFrame(vsp);
         frame.displayMe();
     }
@@ -57,42 +60,42 @@ public class SplitPaneTest extends AbstractGraphicsTest {
     @Test
     public void horizSetAtQuarter() {
         title("horizontal split pane 0.25");
-        HorizontalSplitPane hsp = new HorizontalSplitPane(one, two, 0.25);
+        hsp = new HorizontalSplitPane(one, two, 0.25);
         assertThat(hsp.getFraction(), is(equalTo(0.25)));
     }
 
     @Test
     public void horizClipLow() {
         title("horizontal split pane < 0.0");
-        HorizontalSplitPane hsp = new HorizontalSplitPane(one, two, -0.33);
+        hsp = new HorizontalSplitPane(one, two, -0.33);
         assertThat(hsp.getFraction(), is(equalTo(0.0)));
     }
 
     @Test
     public void horizClipHigh() {
         title("horizontal split pane > 1.0");
-        HorizontalSplitPane hsp = new HorizontalSplitPane(one, two, 2.71);
+        hsp = new HorizontalSplitPane(one, two, 2.71);
         assertThat(hsp.getFraction(), is(equalTo(1.0)));
     }
 
     @Test
     public void vertSetAtQuarter() {
         title("vertical split pane 0.25");
-        VerticalSplitPane vsp = new VerticalSplitPane(one, two, 0.25);
+        vsp = new VerticalSplitPane(one, two, 0.25);
         assertThat(vsp.getFraction(), is(equalTo(0.25)));
     }
 
     @Test
     public void vertClipLow() {
         title("vertical split pane < 0.0");
-        VerticalSplitPane vsp = new VerticalSplitPane(one, two, -0.33);
+        vsp = new VerticalSplitPane(one, two, -0.33);
         assertThat(vsp.getFraction(), is(equalTo(0.0)));
     }
 
     @Test
     public void vertClipHigh() {
         title("vertical split pane > 1.0");
-        VerticalSplitPane hsp = new VerticalSplitPane(one, two, 2.71);
-        assertThat(hsp.getFraction(), is(equalTo(1.0)));
+        vsp = new VerticalSplitPane(one, two, 2.71);
+        assertThat(vsp.getFraction(), is(equalTo(1.0)));
     }
 }
