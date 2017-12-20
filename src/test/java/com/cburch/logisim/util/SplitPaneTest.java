@@ -41,7 +41,7 @@ public class SplitPaneTest extends AbstractGraphicsTest {
     @Ignore(DONT_RUN)
     @Test
     public void horizontal() {
-        HorizontalSplitPane hsp = new HorizontalSplitPane(one, two);
+        HorizontalSplitPane hsp = new HorizontalSplitPane(one, two, 0.5);
         frame = new ClosableTestFrame(hsp);
         frame.displayMe();
     }
@@ -49,17 +49,9 @@ public class SplitPaneTest extends AbstractGraphicsTest {
     @Ignore(DONT_RUN)
     @Test
     public void vertical() {
-        VerticalSplitPane vsp = new VerticalSplitPane(one, two);
+        VerticalSplitPane vsp = new VerticalSplitPane(one, two, 0.5);
         frame = new ClosableTestFrame(vsp);
         frame.displayMe();
-    }
-
-
-    @Test
-    public void horizDefault() {
-        title("horizontal split pane default");
-        HorizontalSplitPane hsp = new HorizontalSplitPane(one, two);
-        assertThat(hsp.getFraction(), is(equalTo(0.5)));
     }
 
     @Test
@@ -84,13 +76,6 @@ public class SplitPaneTest extends AbstractGraphicsTest {
     }
 
     @Test
-    public void vertDefault() {
-        title("vertical split pane default");
-        VerticalSplitPane vsp = new VerticalSplitPane(one, two);
-        assertThat(vsp.getFraction(), is(equalTo(0.5)));
-    }
-
-    @Test
     public void vertSetAtQuarter() {
         title("vertical split pane 0.25");
         VerticalSplitPane vsp = new VerticalSplitPane(one, two, 0.25);
@@ -107,7 +92,7 @@ public class SplitPaneTest extends AbstractGraphicsTest {
     @Test
     public void vertClipHigh() {
         title("vertical split pane > 1.0");
-        VerticalSplitPane vsp = new VerticalSplitPane(one, two, 2.71);
-        assertThat(vsp.getFraction(), is(equalTo(1.0)));
+        VerticalSplitPane hsp = new VerticalSplitPane(one, two, 2.71);
+        assertThat(hsp.getFraction(), is(equalTo(1.0)));
     }
 }
