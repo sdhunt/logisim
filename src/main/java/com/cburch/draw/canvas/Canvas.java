@@ -68,7 +68,7 @@ public class Canvas extends JComponent {
 
     public void setModel(CanvasModel value, ActionDispatcher dispatcher) {
         CanvasModel oldValue = model;
-        if (!oldValue.equals(value)) {
+        if (oldValue == null || !oldValue.equals(value)) {
             if (oldValue != null) {
                 oldValue.removeCanvasModelListener(listener);
             }
@@ -86,6 +86,7 @@ public class Canvas extends JComponent {
     }
 
     public void setTool(CanvasTool value) {
+        // TODO: are we guaranteed that value is always non-null?
         CanvasTool oldValue = listener.getTool();
         if (!value.equals(oldValue)) {
             listener.setTool(value);
