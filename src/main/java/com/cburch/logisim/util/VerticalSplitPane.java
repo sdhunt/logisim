@@ -1,26 +1,23 @@
-/* Copyright (c) 2010, Carl Burch. License information is located in the
- * com.cburch.logisim.Main source code and at www.cburch.com/logisim/. */
+/*
+ * Copyright (c) 2010, Carl Burch. License information is located in the
+ * com.cburch.logisim.Main source code and at www.cburch.com/logisim/.
+ */
 
 package com.cburch.logisim.util;
 
-import java.awt.Component;
-import java.awt.Container;
-import java.awt.Cursor;
-import java.awt.Dimension;
-import java.awt.Insets;
-import java.awt.LayoutManager;
+import javax.swing.*;
+import java.awt.*;
 import java.awt.event.MouseEvent;
 
-import javax.swing.JComponent;
-import javax.swing.JPanel;
-
-@SuppressWarnings("serial")
 public class VerticalSplitPane extends JPanel {
     private class MyLayout implements LayoutManager {
         @Override
-        public void addLayoutComponent(String name, Component comp) { }
+        public void addLayoutComponent(String name, Component comp) {
+        }
+
         @Override
-        public void removeLayoutComponent(Component comp) { }
+        public void removeLayoutComponent(Component comp) {
+        }
 
         @Override
         public Dimension preferredLayoutSize(Container parent) {
@@ -36,7 +33,7 @@ public class VerticalSplitPane extends JPanel {
             Dimension d0 = comp0.getPreferredSize();
             Dimension d1 = comp1.getPreferredSize();
             return new Dimension(in.left + d0.width + d1.width + in.right,
-                    in.top + Math.max(d0.height, d1.height) + in.bottom);
+                                 in.top + Math.max(d0.height, d1.height) + in.bottom);
         }
 
         @Override
@@ -53,7 +50,7 @@ public class VerticalSplitPane extends JPanel {
             Dimension d0 = comp0.getMinimumSize();
             Dimension d1 = comp1.getMinimumSize();
             return new Dimension(in.left + d0.width + d1.width + in.right,
-                    in.top + Math.max(d0.height, d1.height) + in.bottom);
+                                 in.top + Math.max(d0.height, d1.height) + in.bottom);
         }
 
         @Override
@@ -73,11 +70,11 @@ public class VerticalSplitPane extends JPanel {
             }
 
             comp0.setBounds(in.left, in.top,
-                    split, maxHeight);
+                            split, maxHeight);
             comp1.setBounds(in.left + split, in.top,
-                    maxWidth - split, maxHeight);
+                            maxWidth - split, maxHeight);
             dragbar.setBounds(in.left + split - HorizontalSplitPane.DRAG_TOLERANCE, in.top,
-                    2 * HorizontalSplitPane.DRAG_TOLERANCE, maxHeight);
+                              2 * HorizontalSplitPane.DRAG_TOLERANCE, maxHeight);
         }
     }
 
@@ -104,17 +101,34 @@ public class VerticalSplitPane extends JPanel {
     private MyDragbar dragbar;
     private double fraction;
 
+    /**
+     * Creates a vertical split pane containing the two specified
+     * components, with an initial split ratio of 0.5.
+     *
+     * @param comp0 the left component
+     * @param comp1 the right component
+     */
     public VerticalSplitPane(JComponent comp0, JComponent comp1) {
         this(comp0, comp1, 0.5);
     }
 
+    /**
+     * Creates a vertical split pane containing the two specified
+     * components, with an initial split specified by the given fraction.
+     * For example, a fraction of 0.25 will give a quarter of the space to
+     * the left component, and three quarters of the space to the right
+     * component.
+     *
+     * @param comp0    the left component
+     * @param comp1    the right component
+     * @param fraction the initial split fraction
+     */
     public VerticalSplitPane(JComponent comp0, JComponent comp1,
-            double fraction) {
+                             double fraction) {
         this.comp0 = comp0;
         this.comp1 = comp1;
-        // above the other components
         this.dragbar = new MyDragbar();
-        this.fraction = fraction;
+        this.fraction = HorizontalSplitPane.clipFraction(fraction);
 
         setLayout(new MyLayout());
         // above the other components
@@ -123,21 +137,26 @@ public class VerticalSplitPane extends JPanel {
         add(comp1);
     }
 
+    /**
+     * Returns the current split fraction.
+     *
+     * @return the split fraction
+     */
     public double getFraction() {
         return fraction;
     }
 
+
+    /**
+     * Sets the split fraction to the given value. Note that this value is
+     * clipped to the range 0.0 to 1.0.
+     *
+     * @param value the new split value to set.
+     */
     public void setFraction(double value) {
-        if (value < 0.0) {
-            value = 0.0;
-        }
-
-        if (value > 1.0) {
-            value = 1.0;
-        }
-
-        if (fraction != value) {
-            fraction = value;
+        double clipped = HorizontalSplitPane.clipFraction(value);
+        if (fraction != clipped) {
+            fraction = clipped;
             revalidate();
         }
     }

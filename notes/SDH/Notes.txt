@@ -4,9 +4,18 @@ Simon's Notes
 
 3/31/14 Heid
 
-Hardwired font??  new Font(Font.SANS_SERIF, Font.PLAIN, 10)
+    Hardwired font??  new Font(Font.SANS_SERIF, Font.PLAIN, 10)
 
-GraphicsUtil.drawText()                 -- line 230
-ComponentDrawContext.drawRectangle()    -- line 137
+    GraphicsUtil.drawText()                 -- line 230
+    ComponentDrawContext.drawRectangle()    -- line 137
 
+
+Horizontal / Vertical Split Panes
+
+    Implemented to remove the visible controls of the split divider.
+
+    VerticalSplitPane accessing members of Hoz, via package access
+     rather than proper object hierarchy.
+
+    ** Refactoring opportunity here
 
