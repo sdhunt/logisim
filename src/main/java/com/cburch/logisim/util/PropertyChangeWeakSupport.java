@@ -1,5 +1,7 @@
-/* Copyright (c) 2010, Carl Burch. License information is located in the
- * com.cburch.logisim.Main source code and at www.cburch.com/logisim/. */
+/*
+ * Copyright (c) 2010, Carl Burch. License information is located in the
+ * com.cburch.logisim.Main source code and at www.cburch.com/logisim/.
+ */
 
 package com.cburch.logisim.util;
 
@@ -9,101 +11,148 @@ import java.lang.ref.WeakReference;
 import java.util.Iterator;
 import java.util.concurrent.ConcurrentLinkedQueue;
 
+/**
+ * Provides support for managing a collection of property change listeners
+ * using weak references, for property changes on a given source object.
+ */
 public class PropertyChangeWeakSupport {
     private static final String ALL_PROPERTIES = "ALL PROPERTIES";
 
+    /**
+     * Encapsulates a property and its listener (as a weak reference).
+     */
     private static class ListenerData {
-        String property;
-        WeakReference<PropertyChangeListener> listener;
+        private final String property;
+        private final WeakReference<PropertyChangeListener> listener;
+
         ListenerData(String property, PropertyChangeListener listener) {
             this.property = property;
-            this.listener = new WeakReference<PropertyChangeListener>(listener);
+            this.listener = new WeakReference<>(listener);
         }
     }
 
     private Object source;
     private ConcurrentLinkedQueue<ListenerData> listeners;
 
+    /**
+     * Creates an (initially empty) collection of weak listeners for property
+     * changes occuring on the specified source object.
+     *
+     * @param source the source object
+     */
     public PropertyChangeWeakSupport(Object source) {
         this.source = source;
-        this.listeners = new ConcurrentLinkedQueue<ListenerData>();
+        this.listeners = new ConcurrentLinkedQueue<>();
     }
 
+    /**
+     * Adds the specified property change listener to this collection, to be
+     * notified of changes to all properties on the source object.
+     *
+     * @param listener the listener to add
+     */
     public void addPropertyChangeListener(PropertyChangeListener listener) {
         addPropertyChangeListener(ALL_PROPERTIES, listener);
     }
 
-    public void addPropertyChangeListener(String property, PropertyChangeListener listener) {
+    /**
+     * Adds the specified property change listener to this collection, to be
+     * notified of changes to the specified property on the source object.
+     *
+     * @param property the property to listen for
+     * @param listener the listener to add
+     */
+    public void addPropertyChangeListener(String property,
+                                          PropertyChangeListener listener) {
         listeners.add(new ListenerData(property, listener));
     }
 
+    /**
+     * Removes the specified property change listener from this collection.
+     *
+     * @param listener the listener to remove
+     */
     public void removePropertyChangeListener(PropertyChangeListener listener) {
         removePropertyChangeListener(ALL_PROPERTIES, listener);
     }
 
-    public void removePropertyChangeListener(String property, PropertyChangeListener listener) {
+    /**
+     * Removes the specified property change listener (listening for changes
+     * to the given property) from this collection.
+     *
+     * @param property the property listened for
+     * @param listener the listener to remove
+     */
+    public void removePropertyChangeListener(String property,
+                                             PropertyChangeListener listener) {
         for (Iterator<ListenerData> it = listeners.iterator(); it.hasNext(); ) {
             ListenerData data = it.next();
-            PropertyChangeListener l = data.listener.get();
-            if (l == null) {
+            PropertyChangeListener pcl = data.listener.get();
+            if (pcl == null) {
                 it.remove();
-            } else if (data.property.equals(property) && l == listener) {
+            } else if (data.property.equals(property) && pcl == listener) {
                 it.remove();
             }
         }
     }
 
-    public void firePropertyChange(String property, Object oldValue, Object newValue) {
+    private boolean caresAbout(ListenerData data, String property) {
+        return data.property.equals(ALL_PROPERTIES) ||
+                data.property.equals(property);
+    }
+
+    private PropertyChangeEvent mkEvent(String prop, Object oVal, Object nVal) {
+        return new PropertyChangeEvent(source, prop, oVal, nVal);
+    }
+
+    /**
+     * Fires a property change, notifying all registered listeners of the
+     * change.
+     *
+     * @param property the property that changed
+     * @param oldValue the property's old value
+     * @param newValue the property's new value
+     */
+    public void firePropertyChange(String property, Object oldValue,
+                                   Object newValue) {
         PropertyChangeEvent e = null;
+
         for (Iterator<ListenerData> it = listeners.iterator(); it.hasNext(); ) {
             ListenerData data = it.next();
-            PropertyChangeListener l = data.listener.get();
-            if (l == null) {
+            PropertyChangeListener pcl = data.listener.get();
+            if (pcl == null) {
                 it.remove();
-            } else if (data.property == ALL_PROPERTIES
-                    || data.property.equals(property)) {
+            } else if (caresAbout(data, property)) {
                 if (e == null) {
-                    e = new PropertyChangeEvent(source, property, oldValue, newValue);
+                    e = mkEvent(property, oldValue, newValue);
                 }
-                l.propertyChange(e);
+                pcl.propertyChange(e);
             }
         }
     }
 
+    /**
+     * Fires an integer property change, notifying all registered listeners
+     * of the change.
+     *
+     * @param property the property that changed
+     * @param oldValue the property's old integer value
+     * @param newValue the property's new integer value
+     */
     public void firePropertyChange(String property, int oldValue, int newValue) {
-        PropertyChangeEvent e = null;
-        for (Iterator<ListenerData> it = listeners.iterator(); it.hasNext(); ) {
-            ListenerData data = it.next();
-            PropertyChangeListener l = data.listener.get();
-            if (l == null) {
-                it.remove();
-            } else if (data.property == ALL_PROPERTIES
-                    || data.property.equals(property)) {
-                if (e == null) {
-                    e = new PropertyChangeEvent(source, property,
-                        Integer.valueOf(oldValue), Integer.valueOf(newValue));
-                }
-                l.propertyChange(e);
-            }
-        }
+        firePropertyChange(property, (Object) oldValue, (Object) newValue);
     }
 
-    public void firePropertyChange(String property, boolean oldValue, boolean newValue) {
-        PropertyChangeEvent e = null;
-        for (Iterator<ListenerData> it = listeners.iterator(); it.hasNext(); ) {
-            ListenerData data = it.next();
-            PropertyChangeListener l = data.listener.get();
-            if (l == null) {
-                it.remove();
-            } else if (data.property == ALL_PROPERTIES
-                    || data.property.equals(property)) {
-                if (e == null) {
-                    e = new PropertyChangeEvent(source, property,
-                        Boolean.valueOf(oldValue), Boolean.valueOf(newValue));
-                }
-                l.propertyChange(e);
-            }
-        }
+    /**
+     * Fires a boolean property change, notifying all registered listeners
+     * of the change.
+     *
+     * @param property the property that changed
+     * @param oldValue the property's old boolean value
+     * @param newValue the property's new boolean value
+     */
+    public void firePropertyChange(String property, boolean oldValue,
+                                   boolean newValue) {
+        firePropertyChange(property, (Object) oldValue, (Object) newValue);
     }
-
 }
