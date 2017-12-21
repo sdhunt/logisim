@@ -7,12 +7,9 @@
 package com.cburch.logisim.util;
 
 import com.meowster.test.AbstractTest;
-import org.junit.AfterClass;
-import org.junit.BeforeClass;
 import org.junit.Test;
 
 import java.awt.*;
-import java.util.Locale;
 
 import static org.hamcrest.CoreMatchers.equalTo;
 import static org.hamcrest.CoreMatchers.is;
@@ -22,19 +19,6 @@ import static org.hamcrest.MatcherAssert.assertThat;
  * Unit tests for {@link FontUtil}.
  */
 public class FontUtilTest extends AbstractTest {
-
-    private static Locale systemLocale;
-
-    @BeforeClass
-    public static void classSetUp() {
-        systemLocale = Locale.getDefault();
-        Locale.setDefault(Locale.US);
-    }
-
-    @AfterClass
-    public static void classTearDown() {
-        Locale.setDefault(systemLocale);
-    }
 
     @Test
     public void standardPlain() {

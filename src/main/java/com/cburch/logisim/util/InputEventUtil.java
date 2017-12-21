@@ -1,185 +1,154 @@
-/* Copyright (c) 2010, Carl Burch. License information is located in the
- * com.cburch.logisim.Main source code and at www.cburch.com/logisim/. */
+/*
+ * Copyright (c) 2010, Carl Burch. License information is located in the
+ * com.cburch.logisim.Main source code and at www.cburch.com/logisim/.
+ */
 
 package com.cburch.logisim.util;
 
-import java.awt.Event;
+import java.awt.*;
 import java.awt.event.InputEvent;
-import java.util.ArrayList;
+import java.util.HashMap;
+import java.util.Map;
 import java.util.StringTokenizer;
-import java.util.Iterator;
-import static com.cburch.logisim.util.LocaleString.*;
+import java.util.function.Function;
 
-public class InputEventUtil {
-    public static String CTRL    = "Ctrl";
-    public static String SHIFT   = "Shift";
-    public static String ALT     = "Alt";
-    public static String BUTTON1 = "Button1";
-    public static String BUTTON2 = "Button2";
-    public static String BUTTON3 = "Button3";
+import static com.cburch.logisim.util.LocaleString.getFromLocale;
 
-    private InputEventUtil() { }
+/**
+ * Utility methods for input events.
+ */
+public final class InputEventUtil {
+    private static final String E_BAD_TOKEN = "Bad event bit token: ";
+    private static final String SPACE = " ";
 
-    public static int fromString(String str) {
-        int ret = 0;
-        StringTokenizer toks = new StringTokenizer(str);
-        while (toks.hasMoreTokens()) {
-            String s = toks.nextToken();
-            if (s.equals(CTRL)) {
-                        ret |= InputEvent.CTRL_DOWN_MASK;
-            }
+    private static String SHIFT = "Shift";
+    private static String CTRL = "Ctrl";
+    private static String ALT = "Alt";
+    private static String BUTTON1 = "Button1";
+    private static String BUTTON2 = "Button2";
+    private static String BUTTON3 = "Button3";
 
-            else if (s.equals(SHIFT)) {
-                  ret |= InputEvent.SHIFT_DOWN_MASK;
-            }
+    private static String LKEY_META_MOD = "metaMod";
+    private static String LKEY_SHIFT_MOD = "shiftMod";
+    private static String LKEY_CTRL_MOD = "ctrlMod";
+    private static String LKEY_ALT_MOD = "altMod";
+    private static String LKEY_BUTTON1_MOD = "button1Mod";
+    private static String LKEY_BUTTON2_MOD = "button2Mod";
+    private static String LKEY_BUTTON3_MOD = "button3Mod";
 
-            else if (s.equals(ALT)) {
-                    ret |= InputEvent.ALT_DOWN_MASK;
-            }
+    private static final int[] INPUT_EVENT_BITS = {
+            InputEvent.SHIFT_DOWN_MASK,
+            InputEvent.CTRL_DOWN_MASK,
+            InputEvent.ALT_DOWN_MASK,
+            InputEvent.BUTTON1_DOWN_MASK,
+            InputEvent.BUTTON2_DOWN_MASK,
+            InputEvent.BUTTON3_DOWN_MASK,
+    };
 
-            else if (s.equals(BUTTON1)) {
-                ret |= InputEvent.BUTTON1_DOWN_MASK;
-            }
+    private static final String[] INPUT_EVENT_TOKENS = {
+            SHIFT, CTRL, ALT, BUTTON1, BUTTON2, BUTTON3,
+    };
 
-            else if (s.equals(BUTTON2)) {
-                ret |= InputEvent.BUTTON2_DOWN_MASK;
-            }
+    private static final String[] INPUT_EVENT_KEYS = {
+            LKEY_SHIFT_MOD, LKEY_CTRL_MOD, LKEY_ALT_MOD,
+            LKEY_BUTTON1_MOD, LKEY_BUTTON2_MOD, LKEY_BUTTON3_MOD,
+    };
 
-            else if (s.equals(BUTTON3)) {
-                ret |= InputEvent.BUTTON3_DOWN_MASK;
-            }
+    private static final int[] EVENT_BITS = {
+            Event.SHIFT_MASK,
+            Event.CTRL_MASK,
+            Event.META_MASK,
+            Event.ALT_MASK,
+    };
 
-            else {
-                throw new NumberFormatException("InputEventUtil");
-            }
+    private static final String[] EVENT_KEYS = {
+            LKEY_SHIFT_MOD, LKEY_CTRL_MOD, LKEY_META_MOD, LKEY_ALT_MOD,
+    };
 
-        }
-        return ret;
+    private static final Map<String, Integer> TOKEN_TO_BIT = new HashMap<>();
+
+    static {
+        TOKEN_TO_BIT.put(SHIFT, InputEvent.SHIFT_DOWN_MASK);
+        TOKEN_TO_BIT.put(CTRL, InputEvent.CTRL_DOWN_MASK);
+        TOKEN_TO_BIT.put(ALT, InputEvent.ALT_DOWN_MASK);
+        TOKEN_TO_BIT.put(BUTTON1, InputEvent.BUTTON1_DOWN_MASK);
+        TOKEN_TO_BIT.put(BUTTON2, InputEvent.BUTTON2_DOWN_MASK);
+        TOKEN_TO_BIT.put(BUTTON3, InputEvent.BUTTON3_DOWN_MASK);
     }
 
-    public static String toString(int mods) {
-        ArrayList<String> arr = new ArrayList<String>();
-        if ((mods & InputEvent.CTRL_DOWN_MASK)    != 0) {
-            arr.add(CTRL);
-        }
+    // non-instantiable
+    private InputEventUtil() {
+    }
 
-        if ((mods & InputEvent.ALT_DOWN_MASK)     != 0) {
-            arr.add(ALT);
-        }
-
-        if ((mods & InputEvent.SHIFT_DOWN_MASK)   != 0) {
-            arr.add(SHIFT);
-        }
-
-        if ((mods & InputEvent.BUTTON1_DOWN_MASK) != 0) {
-            arr.add(BUTTON1);
-        }
-
-        if ((mods & InputEvent.BUTTON2_DOWN_MASK) != 0) {
-            arr.add(BUTTON2);
-        }
-
-        if ((mods & InputEvent.BUTTON3_DOWN_MASK) != 0) {
-            arr.add(BUTTON3);
-        }
-
-
-        Iterator<String> it = arr.iterator();
-        if (it.hasNext()) {
-            StringBuilder ret = new StringBuilder();
-            ret.append(it.next());
-            while (it.hasNext()) {
-                ret.append(" ");
-                ret.append(it.next());
+    /**
+     * Returns a bit mask of {@link InputEvent} constants corresponding to
+     * bit tokens defined in the given string.
+     *
+     * @param tokenString the input string
+     * @return corresponding bit mask
+     * @throws IllegalArgumentException if any token in the string is not valid
+     */
+    public static int fromTokenString(String tokenString) {
+        int bitmask = 0;
+        StringTokenizer tokens = new StringTokenizer(tokenString);
+        while (tokens.hasMoreTokens()) {
+            String s = tokens.nextToken();
+            Integer bit = TOKEN_TO_BIT.get(s);
+            if (bit != null) {
+                bitmask |= bit;
+            } else {
+                throw new IllegalArgumentException(E_BAD_TOKEN + s);
             }
-            return ret.toString();
         }
-        return "";
+        return bitmask;
     }
 
-    public static int fromDisplayString(String str) {
-        int ret = 0;
-        StringTokenizer toks = new StringTokenizer(str);
-        while (toks.hasMoreTokens()) {
-        	String s = toks.nextToken();
-        	if (s.equals(getFromLocale("ctrlMod"))) {
-        		ret |= InputEvent.CTRL_DOWN_MASK;
-        	}
-
-        	else if (s.equals(getFromLocale("altMod"))) {
-        		ret |= InputEvent.ALT_DOWN_MASK;
-        	}
-
-        	else if (s.equals(getFromLocale("shiftMod"))) {
-        		ret |= InputEvent.SHIFT_DOWN_MASK;
-        	}
-
-        	else if (s.equals(getFromLocale("button1Mod"))) {
-        		ret |= InputEvent.BUTTON1_DOWN_MASK;
-        	}
-
-        	else if (s.equals(getFromLocale("button2Mod"))) {
-        		ret |= InputEvent.BUTTON2_DOWN_MASK;
-        	}
-
-        	else if (s.equals(getFromLocale("button3Mod"))) {
-        		ret |= InputEvent.BUTTON3_DOWN_MASK;
-        	}
-        	else {
-        		throw new NumberFormatException("InputEventUtil");
-        	}
-
-        }
-        return ret;
+    /**
+     * Returns a string of tokens corresponding to the given event bit mask.
+     *
+     * @param mods the event bit modifiers
+     * @return the corresponding tokenized string
+     */
+    public static String toTokenString(int mods) {
+        return toSomeString(mods, INPUT_EVENT_BITS,
+                            (i) -> INPUT_EVENT_TOKENS[i]);
     }
 
+    /**
+     * Returns a display string of event modifier tokens (in the default locale).
+     *
+     * @param mods the modifier bitmask
+     * @return a space-delimited list of tokens
+     */
     public static String toDisplayString(int mods) {
-        ArrayList<String> arr = new ArrayList<String>();
-        if ((mods & InputEvent.CTRL_DOWN_MASK)    != 0) {
-            arr.add(getFromLocale("ctrlMod"));
-        }
-
-        if ((mods & InputEvent.ALT_DOWN_MASK)     != 0) {
-            arr.add(getFromLocale("altMod"));
-        }
-
-        if ((mods & InputEvent.SHIFT_DOWN_MASK)   != 0) {
-            arr.add(getFromLocale("shiftMod"));
-        }
-
-        if ((mods & InputEvent.BUTTON1_DOWN_MASK) != 0) {
-            arr.add(getFromLocale("button1Mod"));
-        }
-
-        if ((mods & InputEvent.BUTTON2_DOWN_MASK) != 0) {
-            arr.add(getFromLocale("button2Mod"));
-        }
-
-        if ((mods & InputEvent.BUTTON3_DOWN_MASK) != 0) {
-            arr.add(getFromLocale("button3Mod"));
-        }
-        
-        return StringUtil.join(arr, " ");
+        return toSomeString(mods, INPUT_EVENT_BITS,
+                            (i) -> getFromLocale(INPUT_EVENT_KEYS[i]));
     }
 
+    /**
+     * Returns a display string of key modifier tokens (in the default locale).
+     *
+     * @param mods the modifier bitmask
+     * @return a space delimited list of tokens
+     */
     public static String toKeyDisplayString(int mods) {
-        ArrayList<String> arr = new ArrayList<String>();
-        if ((mods & Event.META_MASK)  != 0) {
-            arr.add(getFromLocale("metaMod"));
-        }
+        return toSomeString(mods, EVENT_BITS,
+                            (i) -> getFromLocale(EVENT_KEYS[i]));
+    }
 
-        if ((mods & Event.CTRL_MASK)  != 0) {
-            arr.add(getFromLocale("ctrlMod"));
+    private static String toSomeString(int mods, int[] bitset,
+                                       Function<Integer, String> f) {
+        StringBuilder sb = new StringBuilder();
+        for (int i = 0; i < bitset.length; i++) {
+            int bit = bitset[i];
+            if ((mods & bit) != 0) {
+                sb.append(f.apply(i)).append(SPACE);
+            }
         }
-
-        if ((mods & Event.ALT_MASK)   != 0) {
-            arr.add(getFromLocale("altMod"));
+        final int len = sb.length();
+        if (len > 0) {
+            sb.delete(len - 1, len);
         }
-
-        if ((mods & Event.SHIFT_MASK) != 0) {
-            arr.add(getFromLocale("shiftMod"));
-        }
-        
-        return StringUtil.join(arr, " ");
+        return sb.toString();
     }
 }

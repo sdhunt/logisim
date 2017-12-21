@@ -106,12 +106,19 @@ public class LocaleString {
     }
 
 
-    // for unit testing
-    static void clearSourceMap() {
+    /**
+     * Clears the cached locale data.
+     * Should only be used from unit tests.
+     */
+    public static void clearSourceMap() {
         self.sourceMap.clear();
     }
 
-    static void reInitSourceMap() {
+    /**
+     * Re-initializes the cached locale data.
+     * Should only be used from unit tests.
+     */
+    public static void reInitSourceMap() {
         self.initSourceMap();
     }
 }

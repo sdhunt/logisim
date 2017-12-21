@@ -21,24 +21,6 @@ import static org.hamcrest.MatcherAssert.assertThat;
  */
 public class LocaleStringTest extends AbstractTest {
 
-    private static Locale systemLocale;
-
-    @BeforeClass
-    public static void classSetUp() {
-        systemLocale = Locale.getDefault();
-        Locale.setDefault(Locale.US);
-    }
-
-    @AfterClass
-    public static void classTearDown() {
-        Locale.setDefault(systemLocale);
-    }
-
-    private void setUpLocaleMap(Locale locale) {
-        LocaleString.clearSourceMap();
-        Locale.setDefault(locale);
-        LocaleString.reInitSourceMap();
-    }
 
     @Test
     public void undefinedKey() {

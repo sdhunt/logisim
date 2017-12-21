@@ -19,3 +19,11 @@ Horizontal / Vertical Split Panes
 
     ** Refactoring opportunity here
 
+SVGIcon
+
+    Hard-coded to 16x16.
+
+    Are they used anywhere else in bigger form? If not, then why use
+    SVG external file format at all? Would be a smaller footprint to
+    simply use 16x16 pngs.
+
