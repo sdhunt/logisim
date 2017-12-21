@@ -21,20 +21,20 @@ public final class InputEventUtil {
     private static final String E_BAD_TOKEN = "Bad event bit token: ";
     private static final String SPACE = " ";
 
-    private static String SHIFT = "Shift";
-    private static String CTRL = "Ctrl";
-    private static String ALT = "Alt";
-    private static String BUTTON1 = "Button1";
-    private static String BUTTON2 = "Button2";
-    private static String BUTTON3 = "Button3";
+    private static final String SHIFT = "Shift";
+    private static final String CTRL = "Ctrl";
+    private static final String ALT = "Alt";
+    private static final String BUTTON1 = "Button1";
+    private static final String BUTTON2 = "Button2";
+    private static final String BUTTON3 = "Button3";
 
-    private static String LKEY_META_MOD = "metaMod";
-    private static String LKEY_SHIFT_MOD = "shiftMod";
-    private static String LKEY_CTRL_MOD = "ctrlMod";
-    private static String LKEY_ALT_MOD = "altMod";
-    private static String LKEY_BUTTON1_MOD = "button1Mod";
-    private static String LKEY_BUTTON2_MOD = "button2Mod";
-    private static String LKEY_BUTTON3_MOD = "button3Mod";
+    private static final String LKEY_META_MOD = "metaMod";
+    private static final String LKEY_SHIFT_MOD = "shiftMod";
+    private static final String LKEY_CTRL_MOD = "ctrlMod";
+    private static final String LKEY_ALT_MOD = "altMod";
+    private static final String LKEY_BUTTON1_MOD = "button1Mod";
+    private static final String LKEY_BUTTON2_MOD = "button2Mod";
+    private static final String LKEY_BUTTON3_MOD = "button3Mod";
 
     private static final int[] INPUT_EVENT_BITS = {
             InputEvent.SHIFT_DOWN_MASK,
