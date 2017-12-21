@@ -65,14 +65,21 @@ public class AbstractGraphicsTest extends AbstractTest {
         public void displayMe() {
             setLocation(FRAME_LOCATION);
             setVisible(true);
+        }
+
+        public void waitBeforeQuitting() {
             while (!quitting) {
-                //
                 try {
                     Thread.sleep(50);
                 } catch (InterruptedException e) {
                     e.printStackTrace();
                 }
             }
+        }
+
+        public void displayMeAndWait() {
+            displayMe();
+            waitBeforeQuitting();
         }
 
         @Override
@@ -141,15 +148,29 @@ public class AbstractGraphicsTest extends AbstractTest {
      */
     public class Box extends JPanel {
         private final Dimension dim;
+        private final Dimension minDim;
+        private final Dimension maxDim;
 
         private Box(int width, int height, Color color) {
             dim = new Dimension(width, height);
+            minDim = new Dimension(width / 2, height / 2);
+            maxDim = new Dimension(width * 2, height * 2);
             setBackground(color);
         }
 
         @Override
         public Dimension getPreferredSize() {
             return dim;
+        }
+
+        @Override
+        public Dimension getMinimumSize() {
+            return minDim;
+        }
+
+        @Override
+        public Dimension getMaximumSize() {
+            return maxDim;
         }
     }
 
@@ -162,7 +183,7 @@ public class AbstractGraphicsTest extends AbstractTest {
      */
     protected void showCanvasInFrame() {
         frame = new ClosableTestFrame(canvas);
-        frame.displayMe();
+        frame.displayMeAndWait();
     }
 
     /**

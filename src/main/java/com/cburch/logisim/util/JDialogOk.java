@@ -1,25 +1,24 @@
-/* Copyright (c) 2010, Carl Burch. License information is located in the
- * com.cburch.logisim.Main source code and at www.cburch.com/logisim/. */
+/*
+ * Copyright (c) 2010, Carl Burch. License information is located in the
+ * com.cburch.logisim.Main source code and at www.cburch.com/logisim/.
+ */
 
 package com.cburch.logisim.util;
 
-import java.awt.BorderLayout;
-import java.awt.Container;
-import java.awt.Frame;
-import java.awt.Dialog;
-import java.awt.event.ActionListener;
+import javax.swing.*;
+import java.awt.*;
 import java.awt.event.ActionEvent;
+import java.awt.event.ActionListener;
 import java.awt.event.WindowAdapter;
 import java.awt.event.WindowEvent;
-import javax.swing.Box;
-import javax.swing.BorderFactory;
-import javax.swing.JDialog;
-import javax.swing.JPanel;
-import javax.swing.JButton;
-import static com.cburch.logisim.util.LocaleString.*;
 
-@SuppressWarnings("serial")
+import static com.cburch.logisim.util.LocaleString.getFromLocale;
+
+/**
+ * An abstract base class for a dialog with OK and Cancel buttons.
+ */
 public abstract class JDialogOk extends JDialog {
+
     private class MyListener extends WindowAdapter
             implements ActionListener {
         @Override
@@ -46,12 +45,24 @@ public abstract class JDialogOk extends JDialog {
     protected JButton ok = new JButton(getFromLocale("dlogOkButton"));
     protected JButton cancel = new JButton(getFromLocale("dlogCancelButton"));
 
-    public JDialogOk(Dialog parent, String title, boolean model) {
+    /**
+     * Constructs a modal dialog for the specified parent dialog.
+     *
+     * @param parent the parent dialog
+     * @param title  the dialog title
+     */
+    public JDialogOk(Dialog parent, String title) {
         super(parent, title, true);
         configure();
     }
 
-    public JDialogOk(Frame parent, String title, boolean model) {
+    /**
+     * Constructs a modal dialog for the specified parent frame.
+     *
+     * @param parent the parent frame
+     * @param title  the dialog title
+     */
+    public JDialogOk(Frame parent, String title) {
         super(parent, title, true);
         configure();
     }
@@ -76,10 +87,19 @@ public abstract class JDialogOk extends JDialog {
     }
 
     @Override
-    public Container getContentPane() { return contents; }
+    public Container getContentPane() {
+        return contents;
+    }
 
+    /**
+     * Invoked when the OK button is clicked.
+     */
     public abstract void okClicked();
 
-    public void cancelClicked() { }
+    /**
+     * Invoked when the Cancel button is clicked, or when the window is closed.
+     */
+    public void cancelClicked() {
+    }
 
 }

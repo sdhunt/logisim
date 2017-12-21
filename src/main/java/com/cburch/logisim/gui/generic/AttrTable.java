@@ -73,12 +73,12 @@ public class AttrTable extends JPanel implements LocaleListener {
         Object value;
 
         public MyDialog(Dialog parent, JInputComponent input) {
-            super(parent, getFromLocale("attributeDialogTitle"), true);
+            super(parent, getFromLocale("attributeDialogTitle"));
             configure(input);
         }
 
         public MyDialog(Frame parent, JInputComponent input) {
-            super(parent, getFromLocale("attributeDialogTitle"), true);
+            super(parent, getFromLocale("attributeDialogTitle"));
             configure(input);
         }
 

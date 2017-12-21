@@ -46,7 +46,7 @@ public class SplitPaneTest extends AbstractGraphicsTest {
     public void horizontal() {
         hsp = new HorizontalSplitPane(one, two, 0.5);
         frame = new ClosableTestFrame(hsp);
-        frame.displayMe();
+        frame.displayMeAndWait();
     }
 
     @Ignore(DONT_RUN)
@@ -54,7 +54,7 @@ public class SplitPaneTest extends AbstractGraphicsTest {
     public void vertical() {
         vsp = new VerticalSplitPane(one, two, 0.5);
         frame = new ClosableTestFrame(vsp);
-        frame.displayMe();
+        frame.displayMeAndWait();
     }
 
     @Test
