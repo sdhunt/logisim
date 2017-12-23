@@ -27,3 +27,10 @@ SVGIcon
     SVG external file format at all? Would be a smaller footprint to
     simply use 16x16 pngs.
 
+Menuing System
+
+    The WindowMenu is a special case, since we will be adding items to
+    it dynamically, as projects are opened and closed. The classes in
+    the util package (WindowMenu*) keep track of which window is active,
+    and thus to which menu actions apply.
+

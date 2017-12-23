@@ -6,8 +6,8 @@
 package com.cburch.logisim.util;
 
 import javax.swing.*;
+import java.awt.event.WindowAdapter;
 import java.awt.event.WindowEvent;
-import java.awt.event.WindowListener;
 import java.util.HashMap;
 import java.util.Map;
 
@@ -18,10 +18,7 @@ import static javax.swing.WindowConstants.HIDE_ON_CLOSE;
  */
 public abstract class WindowMenuItemManager {
 
-    private class MyListener implements WindowListener {
-        @Override
-        public void windowOpened(WindowEvent event) {
-        }
+    private class MyListener extends WindowAdapter {
 
         @Override
         public void windowClosing(WindowEvent event) {
@@ -34,10 +31,6 @@ public abstract class WindowMenuItemManager {
         @Override
         public void windowClosed(WindowEvent event) {
             removeFromManager();
-        }
-
-        @Override
-        public void windowDeiconified(WindowEvent event) {
         }
 
         @Override
@@ -81,8 +74,9 @@ public abstract class WindowMenuItemManager {
     }
 
     /**
-     * Returns the associated JFrame, creating it if necessary (if the create
-     * boolean is true).
+     * Subclasses should implement this to return the associated JFrame.
+     * If the create parameter is true, the frame should be created if
+     * necessary.
      *
      * @param create if true, create the frame if necessary
      * @return the frame
@@ -90,7 +84,11 @@ public abstract class WindowMenuItemManager {
     public abstract JFrame getJFrame(boolean create);
 
     /**
-     * Callback invoked when the specified frame opens.
+     * Callback invoked when the specified frame has been opened.
+     * <p>
+     * The window listener is added to the frame (as needed).
+     * This item manager is added to the menu manager
+     * and set as the current manager.
      *
      * @param frame the frame that opened
      */
@@ -104,7 +102,12 @@ public abstract class WindowMenuItemManager {
     }
 
     /**
-     * Callback invoked when the specified frame closes.
+     * Callback invoked when the specified frame has been closed.
+     * <p>
+     * For persistent instances, nothing happens; for transient instances,
+     * the window listener is removed from the frame, the associated
+     * menu item is removed from each menu, and this item manager is
+     * removed from the menu manager.
      *
      * @param frame the frame that closed
      */
@@ -148,7 +151,7 @@ public abstract class WindowMenuItemManager {
     /**
      * Sets the text on this menu item.
      *
-     * @param value
+     * @param value the text to set
      */
     public void setText(String value) {
         text = value;
