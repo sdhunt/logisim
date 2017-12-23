@@ -1,24 +1,32 @@
-/* Copyright (c) 2010, Carl Burch. License information is located in the
- * com.cburch.logisim.Main source code and at www.cburch.com/logisim/. */
+/*
+ * Copyright (c) 2010, Carl Burch. License information is located in the
+ * com.cburch.logisim.Main source code and at www.cburch.com/logisim/.
+ */
 
 package com.cburch.logisim.util;
 
+import javax.swing.*;
 import java.awt.event.WindowEvent;
 import java.awt.event.WindowListener;
 import java.util.HashMap;
+import java.util.Map;
 
-import javax.swing.JFrame;
-import javax.swing.JRadioButtonMenuItem;
-import javax.swing.WindowConstants;
+import static javax.swing.WindowConstants.HIDE_ON_CLOSE;
 
+/**
+ * Abstract base class for managing window menu items.
+ */
 public abstract class WindowMenuItemManager {
+
     private class MyListener implements WindowListener {
         @Override
-        public void windowOpened(WindowEvent event) { }
+        public void windowOpened(WindowEvent event) {
+        }
+
         @Override
         public void windowClosing(WindowEvent event) {
             JFrame frame = getJFrame(false);
-            if (frame.getDefaultCloseOperation() == WindowConstants.HIDE_ON_CLOSE) {
+            if (frame.getDefaultCloseOperation() == HIDE_ON_CLOSE) {
                 removeFromManager();
             }
         }
@@ -29,7 +37,8 @@ public abstract class WindowMenuItemManager {
         }
 
         @Override
-        public void windowDeiconified(WindowEvent event) { }
+        public void windowDeiconified(WindowEvent event) {
+        }
 
         @Override
         public void windowIconified(WindowEvent event) {
@@ -54,9 +63,15 @@ public abstract class WindowMenuItemManager {
     private boolean persistent;
     private boolean listenerAdded = false;
     private boolean inManager = false;
-    private HashMap<WindowMenu,JRadioButtonMenuItem> menuItems
-        = new HashMap<WindowMenu,JRadioButtonMenuItem>();
+    private Map<WindowMenu, JRadioButtonMenuItem> menuItems = new HashMap<>();
 
+    /**
+     * Constructs a new window menu item manager with the given text (name) and
+     * an indication of whether the item is persistent or transient.
+     *
+     * @param text       the text
+     * @param persistent true for persistent; false for transient
+     */
     public WindowMenuItemManager(String text, boolean persistent) {
         this.text = text;
         this.persistent = persistent;
@@ -65,8 +80,20 @@ public abstract class WindowMenuItemManager {
         }
     }
 
+    /**
+     * Returns the associated JFrame, creating it if necessary (if the create
+     * boolean is true).
+     *
+     * @param create if true, create the frame if necessary
+     * @return the frame
+     */
     public abstract JFrame getJFrame(boolean create);
 
+    /**
+     * Callback invoked when the specified frame opens.
+     *
+     * @param frame the frame that opened
+     */
     public void frameOpened(JFrame frame) {
         if (!listenerAdded) {
             frame.addWindowListener(myListener);
@@ -76,6 +103,11 @@ public abstract class WindowMenuItemManager {
         WindowMenuManager.setCurrentManager(this);
     }
 
+    /**
+     * Callback invoked when the specified frame closes.
+     *
+     * @param frame the frame that closed
+     */
     public void frameClosed(JFrame frame) {
         if (!persistent) {
             if (listenerAdded) {
@@ -104,10 +136,20 @@ public abstract class WindowMenuItemManager {
         }
     }
 
+    /**
+     * Returns the text associated with this menu item.
+     *
+     * @return the text
+     */
     public String getText() {
         return text;
     }
 
+    /**
+     * Sets the text on this menu item.
+     *
+     * @param value
+     */
     public void setText(String value) {
         text = value;
         for (JRadioButtonMenuItem menuItem : menuItems.values()) {

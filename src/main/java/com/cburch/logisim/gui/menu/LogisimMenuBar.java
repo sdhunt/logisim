@@ -1,17 +1,9 @@
-/* Copyright (c) 2010, Carl Burch. License information is located in the
- * com.cburch.logisim.Main source code and at www.cburch.com/logisim/. */
+/*
+ * Copyright (c) 2010, Carl Burch. License information is located in the
+ * com.cburch.logisim.Main source code and at www.cburch.com/logisim/.
+ */
 
 package com.cburch.logisim.gui.menu;
-
-import java.awt.event.ActionEvent;
-import java.awt.event.ActionListener;
-import java.util.ArrayList;
-import java.util.HashMap;
-
-import javax.swing.JFrame;
-import javax.swing.JMenuBar;
-import javax.swing.event.ChangeEvent;
-import javax.swing.event.ChangeListener;
 
 import com.cburch.logisim.circuit.CircuitState;
 import com.cburch.logisim.circuit.Simulator;
@@ -20,7 +12,14 @@ import com.cburch.logisim.util.LocaleListener;
 import com.cburch.logisim.util.LocaleManager;
 import com.cburch.logisim.util.WindowMenu;
 
-@SuppressWarnings("serial")
+import javax.swing.*;
+import javax.swing.event.ChangeEvent;
+import javax.swing.event.ChangeListener;
+import java.awt.event.ActionEvent;
+import java.awt.event.ActionListener;
+import java.util.ArrayList;
+import java.util.HashMap;
+
 public class LogisimMenuBar extends JMenuBar {
     public static final LogisimMenuItem PRINT = new LogisimMenuItem("Print");
     public static final LogisimMenuItem EXPORT_IMAGE = new LogisimMenuItem("ExportImage");
@@ -70,8 +69,7 @@ public class LogisimMenuBar extends JMenuBar {
     private MyListener listener;
     private Project proj;
     private SimulateListener simulateListener = null;
-    private HashMap<LogisimMenuItem,MenuItem> menuItems
-        = new HashMap<LogisimMenuItem,MenuItem>();
+    private HashMap<LogisimMenuItem, MenuItem> menuItems = new HashMap<>();
     private ArrayList<ChangeListener> enableListeners;
 
     private MenuFile file;
@@ -84,7 +82,7 @@ public class LogisimMenuBar extends JMenuBar {
         this.parent = parent;
         this.listener = new MyListener();
         this.proj = proj;
-        this.enableListeners = new ArrayList<ChangeListener>();
+        this.enableListeners = new ArrayList<>();
 
         add(file = new MenuFile(this));
         add(edit = new MenuEdit(this));
@@ -165,7 +163,7 @@ public class LogisimMenuBar extends JMenuBar {
     public void doAction(LogisimMenuItem which) {
         MenuItem item = menuItems.get(which);
         item.actionPerformed(new ActionEvent(item, ActionEvent.ACTION_PERFORMED,
-                which.toString()));
+                                             which.toString()));
     }
 
     public boolean isEnabled(LogisimMenuItem item) {

@@ -1,36 +1,36 @@
-/* Copyright (c) 2010, Carl Burch. License information is located in the
- * com.cburch.logisim.Main source code and at www.cburch.com/logisim/. */
+/*
+ * Copyright (c) 2010, Carl Burch. License information is located in the
+ * com.cburch.logisim.Main source code and at www.cburch.com/logisim/.
+ */
 
 package com.cburch.logisim.util;
 
-import java.awt.Dimension;
-import java.awt.Frame;
-import java.awt.Point;
+import javax.swing.*;
+import java.awt.*;
 import java.awt.event.ActionEvent;
 import java.awt.event.ActionListener;
 import java.awt.event.KeyEvent;
 import java.util.ArrayList;
 
-import javax.swing.ButtonGroup;
-import javax.swing.JFrame;
-import javax.swing.JMenu;
-import javax.swing.JMenuItem;
-import javax.swing.JRadioButtonMenuItem;
-import javax.swing.KeyStroke;
-import javax.swing.WindowConstants;
+import static com.cburch.logisim.util.LocaleString.getFromLocale;
+import static com.cburch.logisim.util.MacCompatibility.isQuitAutomaticallyPresent;
+import static com.cburch.logisim.util.WindowMenuManager.getCurrentManager;
+import static javax.swing.KeyStroke.getKeyStroke;
 
-import static com.cburch.logisim.util.LocaleString.*;
-
-@SuppressWarnings("serial")
+/**
+ * Implements the window menu.
+ */
 public class WindowMenu extends JMenu {
+
     private class MyListener implements LocaleListener, ActionListener {
         @Override
         public void localeChanged() {
             WindowMenu.this.setText(getFromLocale("windowMenu"));
             minimize.setText(getFromLocale("windowMinimizeItem"));
             close.setText(getFromLocale("windowCloseItem"));
-            zoom.setText(MacCompatibility.isQuitAutomaticallyPresent() ?
-                    getFromLocale("windowZoomItemMac") : getFromLocale("windowZoomItem"));
+            zoom.setText(isQuitAutomaticallyPresent()
+                                 ? getFromLocale("windowZoomItemMac")
+                                 : getFromLocale("windowZoomItem"));
         }
 
         @Override
@@ -38,10 +38,13 @@ public class WindowMenu extends JMenu {
             Object src = e.getSource();
             if (src == minimize) {
                 doMinimize();
+
             } else if (src == zoom) {
                 doZoom();
+
             } else if (src == close) {
                 doClose();
+
             } else if (src instanceof WindowMenuItem) {
                 WindowMenuItem choice = (WindowMenuItem) src;
                 if (choice.isSelected()) {
@@ -55,17 +58,15 @@ public class WindowMenu extends JMenu {
         }
 
         private WindowMenuItem findOwnerItem() {
-            for (WindowMenuItem i : persistentItems) {
-                if (i.getJFrame() == owner) {
-                    return i;
+            for (WindowMenuItem item : persistentItems) {
+                if (item.getJFrame() == owner) {
+                    return item;
                 }
-
             }
-            for (WindowMenuItem i : transientItems) {
-                if (i.getJFrame() == owner) {
-                    return i;
+            for (WindowMenuItem item : transientItems) {
+                if (item.getJFrame() == owner) {
+                    return item;
                 }
-
             }
             return null;
         }
@@ -77,16 +78,21 @@ public class WindowMenu extends JMenu {
     private JMenuItem zoom = new JMenuItem();
     private JMenuItem close = new JMenuItem();
     private JRadioButtonMenuItem nullItem = new JRadioButtonMenuItem();
-    private ArrayList<WindowMenuItem> persistentItems = new ArrayList<WindowMenuItem>();
-    private ArrayList<WindowMenuItem> transientItems = new ArrayList<WindowMenuItem>();
+    private ArrayList<WindowMenuItem> persistentItems = new ArrayList<>();
+    private ArrayList<WindowMenuItem> transientItems = new ArrayList<>();
 
+    /**
+     * Constructs the window menu component.
+     *
+     * @param owner the owning frame
+     */
     public WindowMenu(JFrame owner) {
         this.owner = owner;
         WindowMenuManager.addMenu(this);
 
         int menuMask = getToolkit().getMenuShortcutKeyMask();
-        minimize.setAccelerator(KeyStroke.getKeyStroke(KeyEvent.VK_M, menuMask));
-        close.setAccelerator(KeyStroke.getKeyStroke(KeyEvent.VK_W, menuMask));
+        minimize.setAccelerator(getKeyStroke(KeyEvent.VK_M, menuMask));
+        close.setAccelerator(getKeyStroke(KeyEvent.VK_W, menuMask));
 
         if (owner == null) {
             minimize.setEnabled(false);
@@ -108,9 +114,7 @@ public class WindowMenu extends JMenu {
     void addMenuItem(Object source, WindowMenuItem item, boolean persistent) {
         if (persistent) {
             persistentItems.add(item);
-        }
-
-        else {
+        } else {
             transientItems.add(item);
         }
 
@@ -126,7 +130,7 @@ public class WindowMenu extends JMenu {
     }
 
     void computeEnabled() {
-        WindowMenuItemManager currentManager = WindowMenuManager.getCurrentManager();
+        WindowMenuItemManager currentManager = getCurrentManager();
         minimize.setEnabled(currentManager != null);
         zoom.setEnabled(currentManager != null);
         close.setEnabled(currentManager != null);
@@ -145,23 +149,10 @@ public class WindowMenu extends JMenu {
         add(zoom);
         add(close);
 
-        if (!persistentItems.isEmpty()) {
-            addSeparator();
-            for (JRadioButtonMenuItem item : persistentItems) {
-                bgroup.add(item);
-                add(item);
-            }
-        }
+        addItemsToButtonGroup(bgroup, persistentItems);
+        addItemsToButtonGroup(bgroup, transientItems);
 
-        if (!transientItems.isEmpty()) {
-            addSeparator();
-            for (JRadioButtonMenuItem item : transientItems) {
-                bgroup.add(item);
-                add(item);
-            }
-        }
-
-        WindowMenuItemManager currentManager = WindowMenuManager.getCurrentManager();
+        WindowMenuItemManager currentManager = getCurrentManager();
         if (currentManager != null) {
             JRadioButtonMenuItem item = currentManager.getMenuItem(this);
             if (item != null) {
@@ -170,13 +161,24 @@ public class WindowMenu extends JMenu {
         }
     }
 
-    void doMinimize() {
+    private void addItemsToButtonGroup(ButtonGroup bgroup,
+                                       ArrayList<WindowMenuItem> items) {
+        if (!items.isEmpty()) {
+            addSeparator();
+            for (JRadioButtonMenuItem item : items) {
+                bgroup.add(item);
+                add(item);
+            }
+        }
+    }
+
+    private void doMinimize() {
         if (owner != null) {
             owner.setExtendedState(Frame.ICONIFIED);
         }
     }
 
-    void doClose() {
+    private void doClose() {
         if (owner instanceof WindowClosable) {
             ((WindowClosable) owner).requestClose();
         } else if (owner != null) {
@@ -191,11 +193,10 @@ public class WindowMenu extends JMenu {
         }
     }
 
-    void doZoom() {
+    private void doZoom() {
         if (owner == null) {
             return;
         }
-
 
         owner.pack();
         Dimension screenSize = owner.getToolkit().getScreenSize();
@@ -228,6 +229,5 @@ public class WindowMenu extends JMenu {
         if (sizeChanged) {
             owner.setSize(windowSize);
         }
-
     }
 }
