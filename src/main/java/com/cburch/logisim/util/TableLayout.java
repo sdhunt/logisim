@@ -1,16 +1,18 @@
-/* Copyright (c) 2010, Carl Burch. License information is located in the
- * com.cburch.logisim.Main source code and at www.cburch.com/logisim/. */
+/*
+ * Copyright (c) 2010, Carl Burch. License information is located in the
+ * com.cburch.logisim.Main source code and at www.cburch.com/logisim/.
+ */
 
 package com.cburch.logisim.util;
 
-import java.awt.Component;
-import java.awt.Container;
-import java.awt.Dimension;
-import java.awt.LayoutManager2;
+import java.awt.*;
 import java.util.ArrayList;
 
+/**
+ * Lays out components in a table with a given number of columns.
+ */
 public class TableLayout implements LayoutManager2 {
-    private int colCount;
+    private final int colCount;
     private ArrayList<Component[]> contents;
     private int curRow;
     private int curCol;
@@ -19,13 +21,25 @@ public class TableLayout implements LayoutManager2 {
     private int[] prefCol;
     private double[] rowWeight;
 
+    /**
+     * Creates a table layout with the specified number of columns.
+     *
+     * @param colCount the column count
+     */
     public TableLayout(int colCount) {
         this.colCount = colCount;
-        this.contents = new ArrayList<Component[]>();
-        this.curRow = 0;
-        this.curCol = 0;
+        contents = new ArrayList<>();
+        curRow = 0;
+        curCol = 0;
     }
 
+    /**
+     * Sets the weight of the specified row.
+     *
+     * @param rowIndex the index of the row
+     * @param weight   the weight to set
+     * @throws IllegalArgumentException if row index or weight are invalid
+     */
     public void setRowWeight(int rowIndex, double weight) {
         if (weight < 0) {
             throw new IllegalArgumentException("weight must be nonnegative");
@@ -33,6 +47,7 @@ public class TableLayout implements LayoutManager2 {
         if (rowIndex < 0) {
             throw new IllegalArgumentException("row index must be nonnegative");
         }
+
         if ((rowWeight == null || rowIndex >= rowWeight.length) && weight != 0.0) {
             double[] a = new double[rowIndex + 10];
             if (rowWeight != null) {
@@ -61,27 +76,25 @@ public class TableLayout implements LayoutManager2 {
 
     @Override
     public void addLayoutComponent(Component comp, Object constraints) {
+        // NOTE: there are no usages of this in the codebase
         if (constraints instanceof TableConstraints) {
             TableConstraints con = (TableConstraints) constraints;
             if (con.getRow() >= 0) {
                 curRow = con.getRow();
             }
-
             if (con.getCol() >= 0) {
                 curCol = con.getCol();
             }
-
         }
         addLayoutComponent("", comp);
     }
 
     @Override
     public void removeLayoutComponent(Component comp) {
-        for (int i = 0, n = contents.size(); i < n; i++) {
-            Component[] row = contents.get(i);
-            for (int j = 0; j < row.length; j++) {
-                if (row[j] == comp) {
-                    row[j] = null;
+        for (Component[] row : contents) {
+            for (int colIndex = 0; colIndex < row.length; colIndex++) {
+                if (row[colIndex] == comp) {
+                    row[colIndex] = null;
                     return;
                 }
             }
@@ -95,28 +108,27 @@ public class TableLayout implements LayoutManager2 {
             int[] prefCol = new int[colCount];
             int[] prefRow = new int[contents.size()];
             int height = 0;
-            for (int i = 0; i < prefRow.length; ++i) {
-                Component[] row = contents.get(i);
+            for (int rowIndex = 0; rowIndex < prefRow.length; ++rowIndex) {
+                Component[] row = contents.get(rowIndex);
                 int rowHeight = 0;
-                for (int j = 0; j < row.length; ++j) {
-                    if (row[j] != null) {
-                        Dimension dim = row[j].getPreferredSize();
+                for (int colIndex = 0; colIndex < row.length; ++colIndex) {
+                    if (row[colIndex] != null) {
+                        Dimension dim = row[colIndex].getPreferredSize();
                         if (dim.height > rowHeight) {
                             rowHeight = dim.height;
                         }
 
-                        if (dim.width > prefCol[j]) {
-                            prefCol[j] = dim.width;
+                        if (dim.width > prefCol[colIndex]) {
+                            prefCol[colIndex] = dim.width;
                         }
-
                     }
                 }
-                prefRow[i] = rowHeight;
+                prefRow[rowIndex] = rowHeight;
                 height += rowHeight;
             }
             int width = 0;
-            for (int i = 0; i < prefCol.length; ++i) {
-                width += prefCol[i];
+            for (int pcol : prefCol) {
+                width += pcol;
             }
             this.prefs = new Dimension(width, height);
             this.prefRow = prefRow;
@@ -189,10 +201,6 @@ public class TableLayout implements LayoutManager2 {
                 y += yRemaining * rowWeight[i] / rowWeightTotal;
             }
         }
-
-
-        // TODO Auto-generated method stub
-
     }
 
     @Override
