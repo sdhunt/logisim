@@ -1,48 +1,63 @@
-/* Copyright (c) 2010, Carl Burch. License information is located in the
- * com.cburch.logisim.Main source code and at www.cburch.com/logisim/. */
+/*
+ * Copyright (c) 2010, Carl Burch. License information is located in the
+ * com.cburch.logisim.Main source code and at www.cburch.com/logisim/.
+ */
 
 package com.cburch.logisim;
 
-import org.slf4j.*;
+import org.slf4j.Logger;
+
+import static org.slf4j.LoggerFactory.getLogger;
 
 /**
- * Handles everything involving Logisim's version number
- * @author Carl Burch, Ryan Steinmetz
+ * Handles everything involving Logisim's version number.
  *
+ * @author Carl Burch, Ryan Steinmetz
  */
 public class LogisimVersion implements Comparable<LogisimVersion> {
     private static final int FINAL_REVISION = Integer.MAX_VALUE / 4;
 
-    private static final Logger logger = LoggerFactory.getLogger( LogisimVersion.class );
+    private static final Logger logger = getLogger(LogisimVersion.class);
 
     /**
-     * Creates a new LogisimVersion object without a revision number
-     * @param major
-     * @param minor
-     * @param release
-     * @return a LogisimVersion object
+     * Returns a Logisim version omitting a revision number.
+     *
+     * @param major   the major number
+     * @param minor   the minor number
+     * @param release the release number
+     * @return a Logisim version instance
      */
     public static LogisimVersion get(int major, int minor, int release) {
         return get(major, minor, release, FINAL_REVISION);
     }
 
     /**
-     * Creates a new LogisimVersion object with a revision number
-     * @param major
-     * @param minor
-     * @param release
-     * @param revision
-     * @return a LogisimVersion object
+     * Returns a Logisim version with the specified revision number.
+     *
+     * @param major    the major number
+     * @param minor    the minor number
+     * @param release  the release number
+     * @param revision the revision number
+     * @return a Logisim version instance
      */
     public static LogisimVersion get(int major, int minor, int release, int revision) {
         return new LogisimVersion(major, minor, release, revision);
     }
 
     /**
-     * Breaks up a single string containing the version number into several integers.
-     * Uses "." as delimiter.
-     * @param versionString
-     * @return a LogisimVersion object
+     * Returns a Logisim version corresponding to the given string
+     * representation.
+     * <p>
+     * Note that the expected form is one of:
+     * <pre>
+     *         "major"
+     *         "major.minor"
+     *         "major.minor.release"
+     *         "major.minor.release.revision"
+     *     </pre>
+     *
+     * @param versionString the string representation
+     * @return a Logisim version instance
      */
     public static LogisimVersion parse(String versionString) {
         String[] parts = versionString.split("\\.");
@@ -68,87 +83,90 @@ public class LogisimVersion implements Comparable<LogisimVersion> {
             }
 
         } catch (NumberFormatException e) {
-            logger.warn( "Something went wrong when parsing the version string." );
+            logger.warn("Bad Version String '{}'", versionString);
+            throw new IllegalArgumentException("Bad version string: " +
+                                                       versionString);
         }
 
         return new LogisimVersion(major, minor, release, revision);
     }
 
-    private int major;
-    private int minor;
-    private int release;
-    private int revision;
-    private String repr;
+    private final int major;
+    private final int minor;
+    private final int release;
+    private final int revision;
+    private final String asString;
 
     /**
-     * Logisim version number constructor. Versions have the form: major.minor.release.revision
-     * @param major
-     * @param minor
-     * @param release
-     * @param revision
+     * Creates a Logisim version.
+     * Versions have the form: major.minor.release.revision
+     *
+     * @param major    the major number
+     * @param minor    the minor number
+     * @param release  the release number
+     * @param revision the revision number
      */
     private LogisimVersion(int major, int minor, int release, int revision) {
         this.major = major;
         this.minor = minor;
         this.release = release;
         this.revision = revision;
-        this.repr = null;
+        this.asString = createStringRep();
     }
 
-	@Override
-	public int hashCode() {
-		return this.major
-			 + this.minor
-			 + this.release
-			 + this.revision;
-	}
+    private String createStringRep() {
+        String suffix = revision == FINAL_REVISION ? "" : "." + revision;
+        return "" + major + "." + minor + "." + release + suffix;
+    }
+
 
     @Override
-    public boolean equals(Object other) {
-        if (other instanceof LogisimVersion) {
-            LogisimVersion o = (LogisimVersion) other;
-            return this.major == o.major && this.minor == o.minor
-                && this.release == o.release && this.revision == o.revision;
-        } else {
-            return false;
-        }
+    public String toString() {
+        return asString;
     }
 
     @Override
     public int compareTo(LogisimVersion other) {
-        int ret = this.major - other.major;
-        if (ret != 0) {
-            return ret;
+        int result = this.major - other.major;
+        if (result != 0) {
+            return result;
         }
 
-        ret = this.minor - other.minor;
-        if (ret != 0) {
-            return ret;
+        result = this.minor - other.minor;
+        if (result != 0) {
+            return result;
         }
 
-        ret = this.release - other.release;
-        if (ret != 0) {
-            return ret;
+        result = this.release - other.release;
+        if (result != 0) {
+            return result;
         }
 
         return this.revision - other.revision;
     }
 
-    /**
-     * converts version number into a string
-     * @return ret
-     */
     @Override
-    public String toString() {
-        String ret = repr;
-        if (ret == null) {
-            ret = major + "." + minor + "." + release;
-            if (revision != FINAL_REVISION) {
-                ret += "." + revision;
-            }
-
-            repr = ret;
+    public boolean equals(Object o) {
+        if (this == o) {
+            return true;
         }
-        return ret;
+        if (o == null || getClass() != o.getClass()) {
+            return false;
+        }
+
+        LogisimVersion that = (LogisimVersion) o;
+        return major == that.major &&
+                minor == that.minor &&
+                release == that.release &&
+                revision == that.revision;
+    }
+
+    @Override
+    public int hashCode() {
+        int result = major;
+        result = 31 * result + minor;
+        result = 31 * result + release;
+        result = 31 * result + revision;
+        return result;
     }
 }
