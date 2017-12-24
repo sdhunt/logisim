@@ -1,85 +1,125 @@
-/* Copyright (c) 2010, Carl Burch. License information is located in the
- * com.cburch.logisim.Main source code and at www.cburch.com/logisim/. */
+/*
+ * Copyright (c) 2010, Carl Burch. License information is located in the
+ * com.cburch.logisim.Main source code and at www.cburch.com/logisim/.
+ */
 
 package com.cburch.logisim.file;
-
-import java.awt.Component;
-import java.awt.Dimension;
-import java.io.FileOutputStream;
-import java.io.InputStream;
-import java.io.File;
-import java.io.IOException;
-import java.util.Collections;
-import java.util.HashMap;
-import java.util.Map;
-import java.util.Stack;
-
-import javax.swing.JFileChooser;
-import javax.swing.JOptionPane;
-import javax.swing.JScrollPane;
-import javax.swing.JTextArea;
-import javax.swing.filechooser.FileFilter;
 
 import com.cburch.logisim.std.Builtin;
 import com.cburch.logisim.tools.Library;
 import com.cburch.logisim.util.JFileChoosers;
 import com.cburch.logisim.util.MacCompatibility;
 import com.cburch.logisim.util.ZipClassLoader;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 
-import static com.cburch.logisim.util.LocaleString.*;
+import javax.swing.*;
+import javax.swing.filechooser.FileFilter;
+import java.awt.*;
+import java.io.File;
+import java.io.FileOutputStream;
+import java.io.IOException;
+import java.io.InputStream;
+import java.util.Collections;
+import java.util.HashMap;
+import java.util.Map;
+import java.util.Stack;
 
-import org.slf4j.*;
+import static com.cburch.logisim.util.LocaleString.getFromLocale;
+import static javax.swing.JOptionPane.showMessageDialog;
 
 /**
  * A class to encapsulate loading functionality
- * of files or library objects
+ * of files or library objects.
  */
 public class Loader implements LibraryLoader {
-    private static final Logger logger = 
-        LoggerFactory.getLogger( Loader.class );
+    private static final Logger logger = LoggerFactory.getLogger(Loader.class);
 
+    private static final String W_MAC_COMPATIBLE = "Could not set Mac " +
+            "compatible file associative flags (file creator and type)";
+    private static final String E_FILE_LOAD =
+            "An error occurred attempting to load the file {}: {}";
+    private static final String E_FILE_OPEN =
+            "An error occurred attempting to open the file {}: {}";
+
+    // localization keys
+    private static final String LK_FILE_CIRCULAR_E = "fileCircularError";
+    private static final String LK_JAR_FILTER = "jarFileFilter";
+    private static final String LK_FILE_FILTER = "logisimFileFilter";
+    private static final String LK_LOG_CIRC_E = "logisimCircularError";
+    private static final String LK_LOAD_E = "logisimLoadError";
+    private static final String LK_FILE_SAVE_E_TTL = "fileSaveErrorTitle";
+    private static final String LK_FILE_SAVE_CLOSE_E = "fileSaveCloseError";
+    private static final String LK_FILE_SAVE_ZERO_E = "fileSaveZeroError";
+    private static final String LK_FILE_SAVE_E = "fileSaveError";
+    private static final String LK_JAR_CLS_NOT_FOUND_E = "jarClassNotFoundError";
+    private static final String LK_JAR_CLS_NOT_LIB_E = "jarClassNotLibraryError";
+    private static final String LK_JAR_LIB_NOT_CREATED_E = "jarLibraryNotCreatedError";
+    private static final String LK_FILE_ERR_TTL = "fileErrorTitle";
+    private static final String LK_FILE_MSG_TTL = "fileMessageTitle";
+    private static final String LK_FILE_LIB_MISS_E = "fileLibraryMissingError";
+    private static final String LK_FILE_LIB_MISS_TTL = "fileLibraryMissingTitle";
+    private static final String LK_FILE_LIB_MISS_BTN = "fileLibraryMissingButton";
+    private static final String LK_FILE_LOAD_CANCELED_E = "fileLoadCanceledError";
+
+    private static final String _BAK = ".bak";
+    private static final String _JAR = ".jar";
+    private static final String FILE_CREATOR = "LGSM";
+    private static final String FILE_TYPE = "circ";
+
+
+    /**
+     * Designates the file extension of Logisim project files.
+     */
     public static final String LOGISIM_EXTENSION = ".circ";
+
+    /**
+     * A file filter for Logisim project files.
+     */
     public static final FileFilter LOGISIM_FILTER = new LogisimFileFilter();
+
+    /**
+     * A file filter for Jar files.
+     */
     public static final FileFilter JAR_FILTER = new JarFileFilter();
 
     private static class LogisimFileFilter extends FileFilter {
         @Override
         public boolean accept(File f) {
-            return f.isDirectory()
-                || f.getName().endsWith(LOGISIM_EXTENSION);
+            return f.isDirectory() || f.getName().endsWith(LOGISIM_EXTENSION);
         }
 
         @Override
         public String getDescription() {
-            return getFromLocale("logisimFileFilter");
+            return getFromLocale(LK_FILE_FILTER);
         }
     }
 
     private static class JarFileFilter extends FileFilter {
         @Override
         public boolean accept(File f) {
-            return f.isDirectory()
-                || f.getName().endsWith(".jar");
+            return f.isDirectory() || f.getName().endsWith(_JAR);
         }
 
         @Override
         public String getDescription() {
-            return getFromLocale("jarFileFilter");
+            return getFromLocale(LK_JAR_FILTER);
         }
     }
 
     // fixed
+    private final Builtin builtin = new Builtin();
     private Component parent;
-    private Builtin builtin = new Builtin();
 
     // to be cleared with each new file
     private File mainFile = null;
-    private Stack<File> filesOpening = new Stack<File>();
-    private Map<File,File> substitutions = new HashMap<File,File>();
+    private Stack<File> filesOpening = new Stack<>();
+    private Map<File, File> substitutions = new HashMap<>();
 
     /**
-     * Constructor
-     * @param parent the parent
+     * Creates a loader associated with the given component.
+     *
+     * @param parent the parent component
      */
     public Loader(Component parent) {
         this.parent = parent;
@@ -87,7 +127,8 @@ public class Loader implements LibraryLoader {
     }
 
     /**
-     * Get built-in functionality.
+     * Returns the built-in functionality.
+     *
      * @return the built-in functionality
      */
     public Builtin getBuiltin() {
@@ -95,34 +136,39 @@ public class Loader implements LibraryLoader {
     }
 
     /**
-     * Sets the parent of the component from a high level.
-     * @param value the component's new parent
+     * Sets the parent component of this loader.
+     *
+     * @param parent the loader's new parent
      */
-    public void setParent(Component value) {
-        parent = value;
+    public void setParent(Component parent) {
+        this.parent = parent;
     }
 
     /**
-     * Get substitutions from a source file
+     * Returns a substitution file for the given source file, if one has been
+     * configured; otherwise just returns the given file.
+     *
      * @param source the source file
-     * @return the returned file
+     * @return the (possibly substituted) file
      */
     private File getSubstitution(File source) {
-        File ret = substitutions.get(source);
-        return ret == null ? source : ret;
+        File substitute = substitutions.get(source);
+        return substitute == null ? source : substitute;
     }
 
     /**
-     * Get the file from the file chooser
-     * @return the selected file
+     * Returns the main file.
+     *
+     * @return the main file
      */
     public File getMainFile() {
         return mainFile;
     }
 
     /**
-     * Spawns a file chooser
-     * @return the JFileChooser
+     * Creates a file chooser opened at the current directory.
+     *
+     * @return a file chooser instance
      */
     public JFileChooser createChooser() {
         return JFileChoosers.createAt(getCurrentDirectory());
@@ -143,8 +189,13 @@ public class Loader implements LibraryLoader {
         mainFile = value;
     }
 
-    /**
+    /*
      * More substantive methods accessed from outside this package.
+     */
+
+    /**
+     * Clears the loader state; files-opening stack is cleared and main-file
+     * is set to null.
      */
     public void clear() {
         filesOpening.clear();
@@ -152,126 +203,140 @@ public class Loader implements LibraryLoader {
     }
 
     /**
-     * Open a file from an array of files to substitute.
-     * @param file the main file
+     * Opens a Logisim file. The supplied map of file substitutions is cached
+     * in the loader, to be used for substitution lookups.
+     *
+     * @param file          the main file
      * @param substitutions the substitution files
-     * @return A functioning LogisimFile
+     * @return a functioning LogisimFile
      * @throws LoadFailedException if there was an error loading the file
      */
-    public LogisimFile openLogisimFile(File file, Map<File,File> substitutions)
+    public LogisimFile openLogisimFile(File file, Map<File, File> substitutions)
             throws LoadFailedException {
         this.substitutions = substitutions;
+
         // FIXME allevaton: What's up with this? Try finally with no catch?
         try {
             return openLogisimFile(file);
+
         } finally {
             this.substitutions = Collections.emptyMap();
         }
     }
 
     /**
-     * Open a file from the hard drive.
-     * @param file the file object
-     * @return the LogisimFile object
+     * Opens a Logisim file from the hard drive.
+     *
+     * @param file the file to load
+     * @return the loaded logisim file
      * @throws LoadFailedException if there was a problem loading the file
      */
     public LogisimFile openLogisimFile(File file) throws LoadFailedException {
         try {
-            LogisimFile ret = loadLogisimFile(file);
-            if (ret != null) {
+            LogisimFile loadedFile = loadLogisimFile(file);
+            if (loadedFile != null) {
                 setMainFile(file);
             }
 
-            showMessages(ret);
-            return ret;
+            showMessages(loadedFile);
+            return loadedFile;
+
         } catch (LoaderException e) {
-            logger.error( "An error occurred when loading the file.\n" 
-                    + e.getMessage() );
+            logger.error(E_FILE_LOAD, file, e.getMessage());
             throw new LoadFailedException(e.getMessage(), e.isShown());
         }
     }
 
-    /** 
-     * Open a file from an input stream
-     * @param reader The input stream
-     * @return a fully functioning LogisimFile object
+    /**
+     * Opens a Logisim file from the given input stream.
+     *
+     * @param reader the input stream
+     * @return the loaded logisim file
      * @throws LoadFailedException if it failed to load
-     * @throws IOException if another error occurred
+     * @throws IOException         if another error occurred
      */
     public LogisimFile openLogisimFile(InputStream reader)
             throws LoadFailedException, IOException {
-        LogisimFile ret = null;
+        LogisimFile loadedFile;
         try {
-            ret = LogisimFile.load(reader, this);
+            loadedFile = LogisimFile.load(reader, this);
+
         } catch (LoaderException e) {
-            logger.error( "An error occurred when loading the file.\n" 
-                    + e.getMessage() );
+            logger.error(E_FILE_LOAD, "{from input stream}", e.getMessage());
+            // TODO: should we be throwing a LoadFailedException here??
             return null;
         }
-        showMessages(ret);
-        return ret;
+        showMessages(loadedFile);
+        return loadedFile;
     }
 
     /**
-     * Loads a specified Logisim library
+     * Loads the specified Logisim library.
+     *
      * @param file the library file
      * @return the library object
      */
     public Library loadLogisimLibrary(File file) {
         File actual = getSubstitution(file);
-        LoadedLibrary ret = LibraryManager.instance.loadLogisimLibrary(this, actual);
-        if (ret != null) {
-            LogisimFile retBase = (LogisimFile) ret.getBase();
-            showMessages(retBase);
+        LoadedLibrary loadedLib =
+                LibraryManager.instance.loadLogisimLibrary(this, actual);
+
+        if (loadedLib != null) {
+            LogisimFile libBase = (LogisimFile) loadedLib.getBase();
+            showMessages(libBase);
         }
-        return ret;
+        return loadedLib;
     }
 
     /**
-     * Loads a library as a jar
-     * @param file the jar file
+     * Loads a library from a jar file.
+     *
+     * @param jarFile   the jar file
      * @param className the class in the jar
      * @return the library object
      */
-    public Library loadJarLibrary(File file, String className) {
-        File actual = getSubstitution(file);
+    public Library loadJarLibrary(File jarFile, String className) {
+        File actual = getSubstitution(jarFile);
         return LibraryManager.instance.loadJarLibrary(this, actual, className);
     }
 
     /**
-     * Reload the specified library.
-     * @param lib The specified library
+     * Reloads the specified library.
+     *
+     * @param lib the library to reload
      */
     public void reload(LoadedLibrary lib) {
         LibraryManager.instance.reload(this, lib);
     }
 
+
     /**
-     * Save the current file.
-     * @param file The source file
-     * @param dest The destination file
-     * @return if the safe was a success
+     * Saves the current file to the give destination file.
+     *
+     * @param file the source Logisim file
+     * @param dest the destination file
+     * @return true if the save was successful; false otherwise
      */
+    // TODO: refactor this method to break up into smaller pieces.
     public boolean save(LogisimFile file, File dest) {
-        Library reference = LibraryManager.instance.findReference(file, dest);
-        if (reference != null) {
-            JOptionPane.showMessageDialog(parent,
-                    getFromLocale("fileCircularError", reference.getDisplayName()),
-                    getFromLocale("fileSaveErrorTitle"),
-                    JOptionPane.ERROR_MESSAGE);
+        Library libRef = LibraryManager.instance.findReference(file, dest);
+        if (libRef != null) {
+            showMessageDialog(parent,
+                              getFromLocale(LK_FILE_CIRCULAR_E, libRef.getDisplayName()),
+                              getFromLocale(LK_FILE_SAVE_E_TTL),
+                              JOptionPane.ERROR_MESSAGE);
             return false;
         }
 
         File backup = determineBackupName(dest);
         boolean backupCreated = backup != null && dest.renameTo(backup);
 
-        FileOutputStream fwrite = null;
+        FileOutputStream fwrite;
         try {
             try {
-                MacCompatibility.setFileCreatorAndType(dest, "LGSM", "circ");
+                MacCompatibility.setFileCreatorAndType(dest, FILE_CREATOR, FILE_TYPE);
             } catch (IOException e) {
-                logger.warn( "Could not set Mac compatible" 
-                        + " file associative flags (file creator and type)" );
+                logger.warn(W_MAC_COMPATIBLE);
             }
             fwrite = new FileOutputStream(dest);
             file.write(fwrite, this);
@@ -280,9 +345,10 @@ public class Loader implements LibraryLoader {
             File oldFile = getMainFile();
             setMainFile(dest);
             LibraryManager.instance.fileSaved(this, dest, oldFile, file);
+
         } catch (IOException e) {
             if (backupCreated) {
-                logger.info( "Backup found, recovering from it." );
+                logger.warn("Backup found, recovering from it.");
                 recoverBackup(backup, dest);
             }
 
@@ -290,31 +356,32 @@ public class Loader implements LibraryLoader {
                 dest.delete();
             }
 
-            JOptionPane.showMessageDialog(parent,
-                getFromLocale("fileSaveError",
-                    e.toString()),
-                getFromLocale("fileSaveErrorTitle"),
-                JOptionPane.ERROR_MESSAGE);
+            showMessageDialog(parent,
+                              getFromLocale(LK_FILE_SAVE_E, e.toString()),
+                              getFromLocale(LK_FILE_SAVE_E_TTL),
+                              JOptionPane.ERROR_MESSAGE);
             return false;
         }
 
+        // FIXME: fwrite != null is always true (??)
         if (fwrite != null) {
             try {
                 fwrite.close();
+
             } catch (IOException e) {
                 if (backupCreated) {
-                    logger.info( "Backup found, recovering from it." );
+                    logger.info("Backup found, recovering from it.");
                     recoverBackup(backup, dest);
                 }
+
                 if (dest.exists() && dest.length() == 0) {
                     dest.delete();
                 }
 
-                JOptionPane.showMessageDialog(parent,
-                    getFromLocale("fileSaveCloseError",
-                        e.toString()),
-                    getFromLocale("fileSaveErrorTitle"),
-                    JOptionPane.ERROR_MESSAGE);
+                showMessageDialog(parent,
+                                  getFromLocale(LK_FILE_SAVE_CLOSE_E, e.toString()),
+                                  getFromLocale(LK_FILE_SAVE_E_TTL),
+                                  JOptionPane.ERROR_MESSAGE);
                 return false;
             }
         }
@@ -322,98 +389,113 @@ public class Loader implements LibraryLoader {
         if (!dest.exists() || dest.length() == 0) {
             if (backupCreated && backup != null && backup.exists()) {
                 recoverBackup(backup, dest);
+
             } else {
                 dest.delete();
             }
-            JOptionPane.showMessageDialog(parent,
-                    getFromLocale("fileSaveZeroError"),
-                    getFromLocale("fileSaveErrorTitle"),
-                    JOptionPane.ERROR_MESSAGE);
+
+            showMessageDialog(parent,
+                              getFromLocale(LK_FILE_SAVE_ZERO_E),
+                              getFromLocale(LK_FILE_SAVE_E_TTL),
+                              JOptionPane.ERROR_MESSAGE);
             return false;
         }
 
         if (backupCreated && backup.exists()) {
             backup.delete();
         }
+
         return true;
     }
 
+
     /**
-     * Get a name for a backup file
+     * Returns a name for a backup file, using the given base.
+     *
      * @param base the base file
      * @return the backup file
      */
     private static File determineBackupName(File base) {
         File dir = base.getParentFile();
         String name = base.getName();
+
         if (name.endsWith(LOGISIM_EXTENSION)) {
             name = name.substring(0, name.length() - LOGISIM_EXTENSION.length());
         }
+        // TODO: this seems brittle (not to mention magic number 20)... review
         for (int i = 1; i <= 20; i++) {
-            String ext = i == 1 ? ".bak" : (".bak" + i);
+            String ext = i == 1 ? _BAK : (_BAK + i);
             File candidate = new File(dir, name + ext);
             if (!candidate.exists()) {
                 return candidate;
             }
-
         }
         return null;
     }
 
+
     /**
-     * Recover from a backup.
+     * Attempts to recover from a backup file.
+     *
      * @param backup the backup file to recover from
-     * @param dest where does the backup file go
+     * @param dest   where does the backup file go
      */
     private static void recoverBackup(File backup, File dest) {
+        // TODO: should check return values of delete() and renameTo() ops!
         if (backup != null && backup.exists()) {
             if (dest.exists()) {
                 dest.delete();
             }
-
             backup.renameTo(dest);
         }
     }
 
     /**
-     * Loads a Logisim file
+     * Loads a Logisim file.
+     *
      * @param request the requested file
-     * @return the completed file object
+     * @return the Logisim file
      */
     LogisimFile loadLogisimFile(File request) throws LoadFailedException {
         File actual = getSubstitution(request);
+        String projectName = toProjectName(actual);
+
         for (File fileOpening : filesOpening) {
             if (fileOpening.equals(actual)) {
-                logger.error( "An error occurred when opening the file.\n" 
-                    + getFromLocale("logisimCircularError" ) );
-                throw new LoadFailedException(getFromLocale("logisimCircularError",
-                        toProjectName(actual)));
+                logger.error(E_FILE_OPEN, getFromLocale(LK_LOG_CIRC_E), projectName);
+                throw new LoadFailedException(getFromLocale(LK_LOG_CIRC_E, projectName));
             }
         }
 
-        LogisimFile ret = null;
+        LogisimFile loadedFile;
         filesOpening.push(actual);
         try {
-            ret = LogisimFile.load(actual, this);
+            loadedFile = LogisimFile.load(actual, this);
+
         } catch (IOException e) {
-            logger.error( "An error occurred when opening the file.\n" 
-                + getFromLocale("logisimCircularError" ) );
-            throw new LoadFailedException(getFromLocale("logisimLoadError",
-                    toProjectName(actual), e.toString()));
+            logger.error(E_FILE_OPEN, getFromLocale(LK_LOG_CIRC_E), projectName);
+            throw new LoadFailedException(getFromLocale(LK_LOAD_E, projectName, e.toString()));
+
         } finally {
             filesOpening.pop();
         }
-        ret.setName(toProjectName(actual));
-        return ret;
+        if (loadedFile != null) {
+            loadedFile.setName(projectName);
+        }
+        return loadedFile;
     }
 
     /**
-     * Loads a Java jar file as a library
+     * Loads a jar file as a library.
+     *
      * @param request the requested jar file
-     * @param string the class name specified in the file
+     * @param className  the class name specified in the file
      * @return the loaded library
+     * @throws LoadFailedException if there was an issue loading the library
      */
-    Library loadJarFile(File request, String className) throws LoadFailedException {
+    Library loadJarFile(File request, String className)
+            throws LoadFailedException {
+
         File actual = getSubstitution(request);
         // Up until 2.1.8, this was written to use a URLClassLoader, which
         // worked pretty well, except that the class never releases its file
@@ -441,37 +523,41 @@ public class Loader implements LibraryLoader {
         */
 
         // load library class from loader
-        Class<?> retClass;
+        Class<?> libClass;
         try {
-            retClass = loader.loadClass(className);
+            libClass = loader.loadClass(className);
+
         } catch (ClassNotFoundException e) {
-            logger.error( "Class not found" );
-            throw new LoadFailedException(getFromLocale("jarClassNotFoundError", className));
+            logger.error("Class not found: {}", className);
+            throw new LoadFailedException(getFromLocale(LK_JAR_CLS_NOT_FOUND_E, className));
         }
-        if (!(Library.class.isAssignableFrom(retClass))) {
-            logger.error( "Class not library" );
-            throw new LoadFailedException(getFromLocale("jarClassNotLibraryError", className));
+        if (!(Library.class.isAssignableFrom(libClass))) {
+            logger.error("Class not library: {}", libClass);
+            throw new LoadFailedException(getFromLocale(LK_JAR_CLS_NOT_LIB_E, className));
         }
 
         // instantiate library
-        Library ret;
+        Library lib;
         try {
-            ret = (Library) retClass.newInstance();
+            lib = (Library) libClass.newInstance();
+
         } catch (Exception e) {
-            logger.error( "Class not library" );
-            throw new LoadFailedException(getFromLocale("jarLibraryNotCreatedError", className));
+            logger.error("Class not library: {}", libClass);
+            throw new LoadFailedException(getFromLocale(LK_JAR_LIB_NOT_CREATED_E, className));
         }
-        return ret;
+        return lib;
     }
+
 
     //
     // Library methods
     //
 
     /**
-     * Loads a Logisim library
-     * @param desc the file descriptor
-     * @return the library object
+     * Loads a Logisim library designated by the specified descriptor.
+     *
+     * @param desc the library file descriptor
+     * @return the library
      */
     @Override
     public Library loadLibrary(String desc) {
@@ -479,7 +565,8 @@ public class Loader implements LibraryLoader {
     }
 
     /**
-     * Gets a descriptor from a library
+     * Returns the descriptor from the specified library.
+     *
      * @param lib the library
      * @return the descriptor
      */
@@ -489,12 +576,16 @@ public class Loader implements LibraryLoader {
     }
 
     /**
-     * Shows an error based on its description, also logs it
+     * Displays an error description to the user, in addition to logging it.
+     *
      * @param description the error text
      */
     @Override
     public void showError(String description) {
-        logger.error( description );
+        logger.error(description);
+
+        // TODO: refactor with helper methods, and remove magic numbers.
+
         if (!filesOpening.empty()) {
             File top = filesOpening.peek();
             String init = toProjectName(top) + ":";
@@ -508,7 +599,7 @@ public class Loader implements LibraryLoader {
         if (description.contains("\n") || description.length() > 60) {
             int lines = 1;
             for (int pos = description.indexOf('\n'); pos >= 0;
-                    pos = description.indexOf('\n', pos + 1)) {
+                 pos = description.indexOf('\n', pos + 1)) {
                 lines++;
             }
             lines = Math.max(4, Math.min(lines, 7));
@@ -520,17 +611,21 @@ public class Loader implements LibraryLoader {
 
             JScrollPane scrollPane = new JScrollPane(textArea);
             scrollPane.setPreferredSize(new Dimension(350, 150));
-            JOptionPane.showMessageDialog(parent, scrollPane,
-                    getFromLocale("fileErrorTitle"), JOptionPane.ERROR_MESSAGE);
+            showMessageDialog(parent, scrollPane,
+                              getFromLocale(LK_FILE_ERR_TTL),
+                              JOptionPane.ERROR_MESSAGE);
+
         } else {
-            JOptionPane.showMessageDialog(parent, description,
-                    getFromLocale("fileErrorTitle"), JOptionPane.ERROR_MESSAGE);
+            showMessageDialog(parent, description,
+                              getFromLocale(LK_FILE_ERR_TTL),
+                              JOptionPane.ERROR_MESSAGE);
         }
     }
 
     /**
-     * Show the messages from a file
-     * @param source the file to load from 
+     * Displays the messages from a logisim file to the user in a dialog pane.
+     *
+     * @param source the file to load from
      */
     private void showMessages(LogisimFile source) {
         if (source == null) {
@@ -539,20 +634,17 @@ public class Loader implements LibraryLoader {
 
         String message = source.getMessage();
         while (message != null) {
-            JOptionPane.showMessageDialog(parent,
-                message, getFromLocale("fileMessageTitle"),
-                JOptionPane.INFORMATION_MESSAGE);
+            showMessageDialog(parent, message,
+                              getFromLocale(LK_FILE_MSG_TTL),
+                              JOptionPane.INFORMATION_MESSAGE);
             message = source.getMessage();
         }
     }
 
-    //
-    // helper methods
-    //
-
     /**
-     * Get a file from a name
-     * @param name file name
+     * Returns the file for the given name.
+     *
+     * @param name   file name
      * @param filter the file name filter
      * @return the file object
      */
@@ -564,19 +656,18 @@ public class Loader implements LibraryLoader {
             if (currentDirectory != null) {
                 file = new File(currentDirectory, name);
             }
-
         }
+
         while (!file.canRead()) {
-            // It doesn't exist. Figure it out from the user.
-            JOptionPane.showMessageDialog(parent,
-                getFromLocale("fileLibraryMissingError",
-                    file.getName()));
+            // It doesn't exist. Ask the user to supply it.
+            showMessageDialog(parent, getFromLocale(LK_FILE_LIB_MISS_E, file.getName()));
             JFileChooser chooser = createChooser();
             chooser.setFileFilter(filter);
-            chooser.setDialogTitle(getFromLocale("fileLibraryMissingTitle", file.getName()));
-            int action = chooser.showDialog(parent, getFromLocale("fileLibraryMissingButton"));
+            chooser.setDialogTitle(getFromLocale(LK_FILE_LIB_MISS_TTL, file.getName()));
+
+            int action = chooser.showDialog(parent, getFromLocale(LK_FILE_LIB_MISS_BTN));
             if (action != JFileChooser.APPROVE_OPTION) {
-                throw new LoaderException(getFromLocale("fileLoadCanceledError"));
+                throw new LoaderException(getFromLocale(LK_FILE_LOAD_CANCELED_E));
             }
             file = chooser.getSelectedFile();
         }
@@ -584,17 +675,17 @@ public class Loader implements LibraryLoader {
     }
 
     /**
-     * Conform a file to the current project
-     * @param file the destined file
+     * Returns the project name form of the specified file.
+     * In other words, strips of the ".circ" suffix if present.
+     *
+     * @param file the file
      * @return the project name
      */
     private String toProjectName(File file) {
-        String ret = file.getName();
-        if (ret.endsWith(LOGISIM_EXTENSION)) {
-            return ret.substring(0, ret.length() - LOGISIM_EXTENSION.length());
-        } else {
-            return ret;
+        String result = file.getName();
+        if (result.endsWith(LOGISIM_EXTENSION)) {
+            return result.substring(0, result.length() - LOGISIM_EXTENSION.length());
         }
+        return result;
     }
-
 }
