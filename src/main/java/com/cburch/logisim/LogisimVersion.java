@@ -16,6 +16,8 @@ import static org.slf4j.LoggerFactory.getLogger;
  */
 public class LogisimVersion implements Comparable<LogisimVersion> {
     private static final int FINAL_REVISION = Integer.MAX_VALUE / 4;
+    private static final String DOT = ".";
+    private static final String EMPTY = "";
 
     private static final Logger logger = getLogger(LogisimVersion.class);
 
@@ -26,6 +28,7 @@ public class LogisimVersion implements Comparable<LogisimVersion> {
      * @param minor   the minor number
      * @param release the release number
      * @return a Logisim version instance
+     * @throws IllegalArgumentException if any value is negative
      */
     public static LogisimVersion get(int major, int minor, int release) {
         return get(major, minor, release, FINAL_REVISION);
@@ -39,8 +42,13 @@ public class LogisimVersion implements Comparable<LogisimVersion> {
      * @param release  the release number
      * @param revision the revision number
      * @return a Logisim version instance
+     * @throws IllegalArgumentException if any value is negative
      */
-    public static LogisimVersion get(int major, int minor, int release, int revision) {
+    public static LogisimVersion get(int major, int minor, int release,
+                                     int revision) {
+        if (major < 0 || minor < 0 || release < 0 || revision < 0) {
+            throw new IllegalArgumentException("Negatives prohibited");
+        }
         return new LogisimVersion(major, minor, release, revision);
     }
 
@@ -88,7 +96,7 @@ public class LogisimVersion implements Comparable<LogisimVersion> {
                                                        versionString);
         }
 
-        return new LogisimVersion(major, minor, release, revision);
+        return get(major, minor, release, revision);
     }
 
     private final int major;
@@ -115,8 +123,8 @@ public class LogisimVersion implements Comparable<LogisimVersion> {
     }
 
     private String createStringRep() {
-        String suffix = revision == FINAL_REVISION ? "" : "." + revision;
-        return "" + major + "." + minor + "." + release + suffix;
+        String suffix = revision == FINAL_REVISION ? EMPTY : DOT + revision;
+        return EMPTY + major + DOT + minor + DOT + release + suffix;
     }
 
 
