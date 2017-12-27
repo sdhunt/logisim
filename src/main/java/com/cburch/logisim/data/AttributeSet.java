@@ -76,10 +76,10 @@ public interface AttributeSet {
     void setReadOnly(Attribute<?> attr, boolean value);
 
     /**
-     * Returns true if the specified attribute is dirty (?) and needs saving (?).
+     * Returns true if the specified attribute should be saved.
      *
      * @param attr the attribute
-     * @return true if the attribute needs saving; false otherwise (?)
+     * @return true if the attribute needs saving; false otherwise
      */
     boolean isToSave(Attribute<?> attr);
 
