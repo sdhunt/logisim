@@ -20,5 +20,13 @@ public interface AttributeDefaultProvider {
      * @return true if all values are default; false otherwise
      */
     boolean isAllDefaultValues(AttributeSet attrs, LogisimVersion ver);
+
+    /**
+     * Returns the default value for the given attribute.
+     *
+     * @param attr the attribute
+     * @param ver the Logisim version
+     * @return the default value for the attribute
+     */
     Object getDefaultAttributeValue(Attribute<?> attr, LogisimVersion ver);
 }

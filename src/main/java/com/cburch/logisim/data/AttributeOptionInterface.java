@@ -6,7 +6,8 @@
 package com.cburch.logisim.data;
 
 /**
- * Attributes have options.
+ * Option attribute values implement this interface to provide consistent
+ * access to the option values and display strings.
  */
 public interface AttributeOptionInterface {
     /**
@@ -15,10 +16,6 @@ public interface AttributeOptionInterface {
      * @return the value
      */
     Object getValue();
-
-    // ?? this doesn't make sense - all objects implement toString()
-//    @Override
-//    String toString();
 
     /**
      * Returns a string representation of the attribute suitable for
