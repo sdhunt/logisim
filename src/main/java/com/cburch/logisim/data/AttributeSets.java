@@ -27,37 +27,18 @@ public final class AttributeSets {
     private AttributeSets() {
     }
 
-    // TODO: consider implementing AttributeSetAdapter and extending that
     /**
      * Designates an empty attribute set.
      */
-    public static final AttributeSet EMPTY = new AttributeSet() {
+    public static final AttributeSet EMPTY = new AttributeSetAdapter() {
         @Override
         public Object clone() {
             return this;
         }
 
         @Override
-        public void addAttributeListener(AttributeListener l) {
-        }
-
-        @Override
-        public void removeAttributeListener(AttributeListener l) {
-        }
-
-        @Override
         public List<Attribute<?>> getAttributes() {
             return Collections.emptyList();
-        }
-
-        @Override
-        public boolean containsAttribute(Attribute<?> attr) {
-            return false;
-        }
-
-        @Override
-        public Attribute<?> getAttribute(String name) {
-            return null;
         }
 
         @Override
@@ -75,14 +56,6 @@ public final class AttributeSets {
             return true;
         }
 
-        @Override
-        public <V> V getValue(Attribute<V> attr) {
-            return null;
-        }
-
-        @Override
-        public <V> void setValue(Attribute<V> attr, V value) {
-        }
     };
 
     /**
@@ -129,6 +102,10 @@ public final class AttributeSets {
     private static String eMsg(Attribute<?> attr, String suffix) {
         return "attribute " + attr.getName() + " " + suffix;
     }
+
+    // TODO: Consider dropping SingletonSet, to just use FixedSet implementation
+    // It would be better to have less code (aka liability) than the negligible
+    //  reduction in storage.
 
     // an sttribute set that contains a single attribute
     private static class SingletonSet extends AbstractAttributeSet {

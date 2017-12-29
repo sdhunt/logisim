@@ -236,9 +236,9 @@ public final class Wire implements Component, AttributeSet, CustomHandles,
     @Override
     public Object clone() { return this; }
     @Override
-    public void addAttributeListener(AttributeListener l) { }
+    public void addAttributeListener(AttributeListener listener) { }
     @Override
-    public void removeAttributeListener(AttributeListener l) { }
+    public void removeAttributeListener(AttributeListener listener) { }
     @Override
     public List<Attribute<?>> getAttributes() { return ATTRIBUTES; }
     @Override

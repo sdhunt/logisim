@@ -34,9 +34,12 @@ Menuing System
     the util package (WindowMenu*) keep track of which window is active,
     and thus to which menu actions apply.
 
-Clone
+Attribute Sets
+    Clone
 
-    Clone semantics are not well defined; it is better to avoid clone() and
-    use copy constructors. However... the following implement Cloneable:
+        Clone semantics are not well defined; it is better to avoid clone() and
+        use copy constructors. However... the following implement Cloneable:
 
-    * AbstractAttributeSet
+        * AbstractAttributeSet
+
+    Consider dropping SingletonSet from AttributeSets.

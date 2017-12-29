@@ -61,13 +61,13 @@ class FactoryAttributes implements AttributeSet, AttributeListener, Cloneable {
     }
 
     @Override
-    public void addAttributeListener(AttributeListener l) {
-        listeners.add(l);
+    public void addAttributeListener(AttributeListener listener) {
+        listeners.add(listener);
     }
 
     @Override
-    public void removeAttributeListener(AttributeListener l) {
-        listeners.remove(l);
+    public void removeAttributeListener(AttributeListener listener) {
+        listeners.remove(listener);
     }
 
     @Override

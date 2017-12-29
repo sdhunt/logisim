@@ -22,16 +22,16 @@ public interface AttributeSet {
     /**
      * Adds an attribute listener to this set.
      *
-     * @param l the listener to add
+     * @param listener the listener to add
      */
-    void addAttributeListener(AttributeListener l);
+    void addAttributeListener(AttributeListener listener);
 
     /**
      * Removes an attribute listener from this set.
      *
-     * @param l the listener to remove
+     * @param listener the listener to remove
      */
-    void removeAttributeListener(AttributeListener l);
+    void removeAttributeListener(AttributeListener listener);
 
     /**
      * Returns the list of attributes contained in this set.

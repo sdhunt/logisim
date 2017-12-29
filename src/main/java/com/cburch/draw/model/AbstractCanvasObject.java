@@ -150,13 +150,13 @@ public abstract class AbstractCanvasObject
     public abstract <V> V getValue(Attribute<V> attr);
 
     @Override
-    public void addAttributeListener(AttributeListener l) {
-        listeners.add(l);
+    public void addAttributeListener(AttributeListener listener) {
+        listeners.add(listener);
     }
 
     @Override
-    public void removeAttributeListener(AttributeListener l) {
-        listeners.remove(l);
+    public void removeAttributeListener(AttributeListener listener) {
+        listeners.remove(listener);
     }
 
     @Override

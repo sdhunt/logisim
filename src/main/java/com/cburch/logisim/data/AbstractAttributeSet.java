@@ -28,17 +28,17 @@ public abstract class AbstractAttributeSet implements Cloneable, AttributeSet {
     }
 
     @Override
-    public void addAttributeListener(AttributeListener l) {
+    public void addAttributeListener(AttributeListener listener) {
         if (listeners == null) {
             listeners = new ArrayList<>();
         }
 
-        listeners.add(l);
+        listeners.add(listener);
     }
 
     @Override
-    public void removeAttributeListener(AttributeListener l) {
-        listeners.remove(l);
+    public void removeAttributeListener(AttributeListener listener) {
+        listeners.remove(listener);
         if (listeners.isEmpty()) {
             listeners = null;
         }
