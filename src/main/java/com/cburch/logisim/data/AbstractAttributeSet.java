@@ -130,13 +130,4 @@ public abstract class AbstractAttributeSet implements Cloneable, AttributeSet {
      */
     protected abstract void copyInto(AbstractAttributeSet dest);
 
-    // The following declarations are unnecessary, since they are defined
-    //  in the inteface.
-//    @Override
-//    public abstract List<Attribute<?>> getAttributes();
-//    @Override
-//    public abstract <V> V getValue(Attribute<V> attr);
-//    @Override
-//    public abstract <V> void setValue(Attribute<V> attr, V value);
-
 }

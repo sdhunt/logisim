@@ -1,5 +1,7 @@
-/* Copyright (c) 2010, Carl Burch. License information is located in the
- * com.cburch.logisim.Main source code and at www.cburch.com/logisim/. */
+/*
+ * Copyright (c) 2010, Carl Burch. License information is located in the
+ * com.cburch.logisim.Main source code and at www.cburch.com/logisim/.
+ */
 
 package com.cburch.logisim.data;
 
@@ -8,55 +10,114 @@ import java.util.Arrays;
 import java.util.Collections;
 import java.util.List;
 
-public class AttributeSets {
-    private AttributeSets() { }
+/**
+ * Provides useful methods for operating on attribute sets.
+ */
+public final class AttributeSets {
+    private static final String ABSENT = "absent";
+    private static final String READ_ONLY = "read only";
 
+    private static final String E_NOT_SAME_LENGTH =
+            "attribute and value arrays must have same length";
+    private static final String E_ATTRS_MAX =
+            "cannot handle more than 32 attributes";
+    private static final int MAX_ATTRS = 32;
+
+    // non-instantiable
+    private AttributeSets() {
+    }
+
+    // TODO: consider implementing AttributeSetAdapter and extending that
+    /**
+     * Designates an empty attribute set.
+     */
     public static final AttributeSet EMPTY = new AttributeSet() {
         @Override
-        public Object clone() { return this; }
-        @Override
-        public void addAttributeListener(AttributeListener l) { }
-        @Override
-        public void removeAttributeListener(AttributeListener l) { }
+        public Object clone() {
+            return this;
+        }
 
         @Override
-        public List<Attribute<?>> getAttributes() { return Collections.emptyList(); }
-        @Override
-        public boolean containsAttribute(Attribute<?> attr) { return false; }
-        @Override
-        public Attribute<?> getAttribute(String name) { return null; }
+        public void addAttributeListener(AttributeListener l) {
+        }
 
         @Override
-        public boolean isReadOnly(Attribute<?> attr) { return true; }
+        public void removeAttributeListener(AttributeListener l) {
+        }
+
+        @Override
+        public List<Attribute<?>> getAttributes() {
+            return Collections.emptyList();
+        }
+
+        @Override
+        public boolean containsAttribute(Attribute<?> attr) {
+            return false;
+        }
+
+        @Override
+        public Attribute<?> getAttribute(String name) {
+            return null;
+        }
+
+        @Override
+        public boolean isReadOnly(Attribute<?> attr) {
+            return true;
+        }
+
         @Override
         public void setReadOnly(Attribute<?> attr, boolean value) {
             throw new UnsupportedOperationException();
         }
-        @Override
-        public boolean isToSave(Attribute<?> attr) { return true; }
 
         @Override
-        public <V> V getValue(Attribute<V> attr) { return null; }
+        public boolean isToSave(Attribute<?> attr) {
+            return true;
+        }
+
         @Override
-        public <V> void setValue(Attribute<V> attr, V value) { }
+        public <V> V getValue(Attribute<V> attr) {
+            return null;
+        }
+
+        @Override
+        public <V> void setValue(Attribute<V> attr, V value) {
+        }
     };
 
-    public static <V> AttributeSet fixedSet(Attribute<V> attr, V initValue) {
-        return new SingletonSet(attr, initValue);
-    }
-
-    public static AttributeSet fixedSet(Attribute<?>[] attrs, Object[] initValues) {
+    /**
+     * Returns a fixed set containing the given attributes and their initial
+     * values.
+     *
+     * @param attrs      the attributes
+     * @param initValues their initial values
+     * @return the attribute set
+     */
+    public static AttributeSet fixedSet(Attribute<?>[] attrs,
+                                        Object[] initValues) {
         if (attrs.length > 1) {
             return new FixedSet(attrs, initValues);
-        } else if (attrs.length == 1) {
-            return new SingletonSet(attrs[0], initValues[0]);
-        } else {
-            return EMPTY;
         }
+        if (attrs.length == 1) {
+            if (initValues.length != 1) {
+                throw new IllegalArgumentException(E_NOT_SAME_LENGTH);
+            }
+            return new SingletonSet(attrs[0], initValues[0]);
+        }
+        return EMPTY;
     }
 
+    /**
+     * Copies all the attributes from the source set to the destination set.
+     *
+     * @param src the source attribute set
+     * @param dst the destination attribute set
+     */
     public static void copy(AttributeSet src, AttributeSet dst) {
-        if (src == null || src.getAttributes() == null) return;
+        if (src == null || src.getAttributes() == null) {
+            return;
+        }
+
         for (Attribute<?> attr : src.getAttributes()) {
             @SuppressWarnings("unchecked")
             Attribute<Object> attrObj = (Attribute<Object>) attr;
@@ -65,13 +126,18 @@ public class AttributeSets {
         }
     }
 
+    private static String eMsg(Attribute<?> attr, String suffix) {
+        return "attribute " + attr.getName() + " " + suffix;
+    }
+
+    // an sttribute set that contains a single attribute
     private static class SingletonSet extends AbstractAttributeSet {
         private List<Attribute<?>> attrs;
         private Object value;
         private boolean readOnly = false;
 
         SingletonSet(Attribute<?> attr, Object initValue) {
-            this.attrs = new ArrayList<Attribute<?>>(1);
+            this.attrs = new ArrayList<>(1);
             this.attrs.add(attr);
             this.value = initValue;
         }
@@ -97,7 +163,9 @@ public class AttributeSets {
         @Override
         public void setReadOnly(Attribute<?> attr, boolean value) {
             int index = attrs.indexOf(attr);
-            if (index < 0) throw new IllegalArgumentException("attribute " + attr.getName() + " absent");
+            if (index < 0) {
+                throw new IllegalArgumentException(eMsg(attr, ABSENT));
+            }
             readOnly = value;
         }
 
@@ -112,13 +180,20 @@ public class AttributeSets {
         @Override
         public <V> void setValue(Attribute<V> attr, V value) {
             int index = attrs.indexOf(attr);
-            if (index < 0) throw new IllegalArgumentException("attribute " + attr.getName() + " absent");
-            if (readOnly) throw new IllegalArgumentException("read only");
+            if (index < 0) {
+                throw new IllegalArgumentException(eMsg(attr, ABSENT));
+            }
+            if (readOnly) {
+                throw new IllegalArgumentException(eMsg(attr, READ_ONLY));
+            }
             this.value = value;
             fireAttributeValueChanged(attr, value);
         }
     }
 
+
+    // an attribute set that contains a fixed set of attributes
+    // (no more than 32).
     private static class FixedSet extends AbstractAttributeSet {
         private List<Attribute<?>> attrs;
         private Object[] values;
@@ -126,10 +201,10 @@ public class AttributeSets {
 
         FixedSet(Attribute<?>[] attrs, Object[] initValues) {
             if (attrs.length != initValues.length) {
-                throw new IllegalArgumentException("attribute and value arrays must have same length");
+                throw new IllegalArgumentException(E_NOT_SAME_LENGTH);
             }
-            if (attrs.length > 32) {
-                throw new IllegalArgumentException("cannot handle more than 32 attributes");
+            if (attrs.length > MAX_ATTRS) {
+                throw new IllegalArgumentException(E_ATTRS_MAX);
             }
             this.attrs = Arrays.asList(attrs);
             this.values = initValues.clone();
@@ -151,17 +226,19 @@ public class AttributeSets {
         @Override
         public boolean isReadOnly(Attribute<?> attr) {
             int index = attrs.indexOf(attr);
-            if (index < 0) return true;
-            return isReadOnly(index);
+            return index < 0 || isReadOnly(index);
         }
 
         @Override
         public void setReadOnly(Attribute<?> attr, boolean value) {
             int index = attrs.indexOf(attr);
-            if (index < 0) throw new IllegalArgumentException("attribute " + attr.getName() + " absent");
+            if (index < 0) {
+                throw new IllegalArgumentException(eMsg(attr, ABSENT));
+            }
 
-            if (value) readOnly |= (1 << index);
-            else {
+            if (value) {
+                readOnly |= (1 << index);
+            } else {
                 readOnly &= ~(1 << index);
             }
 
@@ -172,18 +249,21 @@ public class AttributeSets {
             int index = attrs.indexOf(attr);
             if (index < 0) {
                 return null;
-            } else {
-                @SuppressWarnings("unchecked")
-                V ret = (V) values[index];
-                return ret;
             }
+            @SuppressWarnings("unchecked")
+            V ret = (V) values[index];
+            return ret;
         }
 
         @Override
         public <V> void setValue(Attribute<V> attr, V value) {
             int index = attrs.indexOf(attr);
-            if (index < 0) throw new IllegalArgumentException("attribute " + attr.getName() + " absent");
-            if (isReadOnly(index)) throw new IllegalArgumentException("read only");
+            if (index < 0) {
+                throw new IllegalArgumentException(eMsg(attr, ABSENT));
+            }
+            if (isReadOnly(index)) {
+                throw new IllegalArgumentException(eMsg(attr, READ_ONLY));
+            }
             values[index] = value;
             fireAttributeValueChanged(attr, value);
         }

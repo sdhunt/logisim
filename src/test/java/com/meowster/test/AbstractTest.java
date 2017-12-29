@@ -20,6 +20,9 @@ import static com.meowster.util.StringUtils.EOL;
  */
 public abstract class AbstractTest {
 
+    protected static final String E_NOEX = "no exception thrown";
+    protected static final String FMT_CORRECT = "correct> %s";
+
     /**
      * Tolerance for double comparisons.
      */
