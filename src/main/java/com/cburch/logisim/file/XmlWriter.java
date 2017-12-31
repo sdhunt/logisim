@@ -5,7 +5,7 @@ package com.cburch.logisim.file;
 
 import com.cburch.draw.model.AbstractCanvasObject;
 import com.cburch.logisim.LogisimVersion;
-import com.cburch.logisim.Main;
+import com.cburch.logisim.Logisim;
 import com.cburch.logisim.circuit.Circuit;
 import com.cburch.logisim.circuit.Wire;
 import com.cburch.logisim.comp.Component;
@@ -82,7 +82,7 @@ class XmlWriter {
         ret.appendChild(doc.createTextNode("\nThis file is intended to be "
                                                    + "loaded by Logisim (http://www.cburch.com/logisim/).\n"));
         ret.setAttribute("version", "1.0");
-        ret.setAttribute("source", Main.VERSION_NAME);
+        ret.setAttribute("source", Logisim.VERSION_NAME);
 
         for (Library lib : file.getLibraries()) {
             Element elt = fromLibrary(lib);
@@ -268,7 +268,7 @@ class XmlWriter {
             return;
         }
 
-        LogisimVersion ver = Main.VERSION;
+        LogisimVersion ver = Logisim.VERSION;
         if (source != null && source.isAllDefaultValues(attrs, ver)) {
             return;
         }

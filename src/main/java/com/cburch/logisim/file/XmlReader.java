@@ -5,7 +5,7 @@ package com.cburch.logisim.file;
 
 import com.cburch.draw.model.AbstractCanvasObject;
 import com.cburch.logisim.LogisimVersion;
-import com.cburch.logisim.Main;
+import com.cburch.logisim.Logisim;
 import com.cburch.logisim.circuit.Circuit;
 import com.cburch.logisim.circuit.appear.AppearanceSvgReader;
 import com.cburch.logisim.comp.Component;
@@ -72,7 +72,7 @@ class XmlReader {
             // determine the version producing this file
             String versionString = elt.getAttribute("source");
             if (versionString.equals("")) {
-                sourceVersion = Main.VERSION;
+                sourceVersion = Logisim.VERSION;
             } else {
                 sourceVersion = LogisimVersion.parse(versionString);
             }

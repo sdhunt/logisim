@@ -16,13 +16,12 @@ import javax.swing.UIManager;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
-import com.cburch.logisim.Main;
+import com.cburch.logisim.Logisim;
 import com.cburch.logisim.file.LoadFailedException;
 import com.cburch.logisim.file.Loader;
 import com.cburch.logisim.gui.main.Print;
 import com.cburch.logisim.gui.menu.LogisimMenuBar;
 import com.cburch.logisim.gui.menu.WindowManagers;
-import com.cburch.logisim.gui.start.SplashScreen;
 import com.cburch.logisim.prefs.AppPreferences;
 import com.cburch.logisim.proj.Project;
 import com.cburch.logisim.proj.ProjectActions;
@@ -90,7 +89,7 @@ public class Startup {
         } catch (Exception t) {
             try {
                 MacOsAdapter.addListeners(false);
-            } catch (Exception t2) { 
+            } catch (Exception t2) {
                 logger.warn( "Failed to register MacOS adapters" );
             }
         }
@@ -216,7 +215,7 @@ public class Startup {
                     ProjectActions.doOpen(monitor, fileToOpen, substitutions);
                 } catch (LoadFailedException ex) {
                     //OK
-                    logger.error( "Could not open " 
+                    logger.error( "Could not open "
                         + fileToOpen.getName() + ": " + ex.getMessage() );
                     System.exit(-1);
                 }
@@ -392,7 +391,7 @@ public class Startup {
                 ret.templPlain = true;
             } else if (arg.equals("-version")) {
                 //OK
-                System.out.println(Main.VERSION_NAME);
+                System.out.println(Logisim.VERSION_NAME);
                 return null;
             } else if (arg.equals("-gates")) {
                 i++;

@@ -15,7 +15,7 @@ import java.util.prefs.PreferenceChangeEvent;
 import java.util.prefs.PreferenceChangeListener;
 import java.util.prefs.Preferences;
 import javax.swing.*;
-import com.cburch.logisim.Main;
+import com.cburch.logisim.Logisim;
 import com.cburch.logisim.circuit.RadixOption;
 import com.cburch.logisim.data.Direction;
 import com.cburch.logisim.gui.start.Startup;
@@ -150,7 +150,7 @@ public class AppPreferences {
         = create(new PrefMonitorString("dialogDirectory", ""));
 
     public static final PrefMonitor<String> LOOK_AND_FEEL = create(new PrefMonitorString("lookAndFeel", UIManager.getSystemLookAndFeelClassName()));
-    
+
     //
     // methods for accessing preferences
     //
@@ -212,7 +212,7 @@ public class AppPreferences {
         if (prefs == null) {
             synchronized(AppPreferences.class) {
                 if (prefs == null) {
-                    Preferences p = Preferences.userNodeForPackage(Main.class);
+                    Preferences p = Preferences.userNodeForPackage(Logisim.class);
                     if (shouldClear) {
                         try { p.clear(); } catch (BackingStoreException e) { }
                     }

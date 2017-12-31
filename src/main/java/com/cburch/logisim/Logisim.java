@@ -22,7 +22,8 @@ package com.cburch.logisim;
 
 import com.cburch.logisim.gui.start.Startup;
 import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
+
+import static org.slf4j.LoggerFactory.getLogger;
 
 /**
  * Main entry point into Logisim.
@@ -30,25 +31,26 @@ import org.slf4j.LoggerFactory;
  * @author Carl Burch
  * @version 2.7.2
  */
-// TODO: consider renaming to Logisim
-public class Main {
+public class Logisim {
+    private static final int MAJOR = 2;
+    private static final int MINOR = 7;
+    private static final int RELEASE = 3;
+
+    // while we are cleaning up the code...
+    private static final int REVISION = 101;
+
     /**
      * Current version.
      */
-    public static final LogisimVersion VERSION = LogisimVersion.get(2, 7, 2);
+    public static final LogisimVersion VERSION =
+            LogisimVersion.get(MAJOR, MINOR, RELEASE, REVISION);
 
     /**
      * Current version as a string.
      */
     public static final String VERSION_NAME = VERSION.toString();
 
-    /**
-     * Copyright year.
-     */
-    // TODO: not used. consider removing.
-    public static final int COPYRIGHT_YEAR = 2012;
-
-    private static final Logger logger = LoggerFactory.getLogger(Main.class);
+    private static final Logger logger = getLogger(Logisim.class);
 
     /**
      * Main entry point.
@@ -61,7 +63,7 @@ public class Main {
             System.exit(0);
         }
 
-        logger.info("Starting Logisim");
+        logger.info("Starting Logisim ({})", VERSION);
         startup.run();
     }
 }

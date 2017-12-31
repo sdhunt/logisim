@@ -28,3 +28,13 @@ Discovered Bugs
 
 Saving file:
 Warning: Could not get charToByteConverterClass!
+
+
+MENU => Main -> About Main
+    * should really be:  Logisim -> About Logisim
+
+    * Pops a window showing: 'java  Version 1.0 (1.0)'
+    * ..when really it should do the same as
+        Help -> About...
+        (showing Logisim 2.7.3.101)
+
