@@ -282,6 +282,199 @@ public class BoundsTest extends AbstractTest {
            (Y)
      */
 
-    // TODO: add unit tests for add(), expand(), translate(), rotate()
+    private void assertBoundsStats(Bounds b, int ex, int ey, int ew, int eh) {
+        assertThat(b.getX(), is(ex));
+        assertThat(b.getY(), is(ey));
+        assertThat(b.getWidth(), is(ew));
+        assertThat(b.getHeight(), is(eh));
+    }
+
+    @Test
+    public void addToEmptyBounds() {
+        title("add: to empty bounds");
+        a = Bounds.EMPTY_BOUNDS;
+        print(a);
+        b = a.add(5, 7);
+        print(b);
+        assertBoundsStats(b, 5, 7, 1, 1);
+    }
+
+    @Test
+    public void addToInsideBounds() {
+        title("add: to inside bounds");
+        a = Bounds.create(5, 7, 9, 11);
+        print(a);
+        b = a.add(6, 8);
+        print(b);
+        assertThat(a, is(equalTo(b)));
+    }
+
+    private void verifyAddedPoint(int px, int py, String where,
+                                  int x, int y, int w, int h) {
+        b = a.add(px, py);
+        print("  add: point %s (%d,%d) ... %s", where, px, py, b);
+        assertBoundsStats(b, x, y, w, h);
+    }
+
+    @Test
+    public void addPoints() {
+        title("addPoints:");
+        a = Bounds.create(10, 20, 30, 40);
+
+        // NOTE: N and W borders are inclusive; E and S borders are exclusive.
+        //   so to make sure a point E or S of the bounds is included, the
+        //   width/height is pushed out by +1 more than you would expect
+        verifyAddedPoint(5, 5, "NW", 5, 5, 35, 55);
+        verifyAddedPoint(15, 5, "N", 10, 5, 30, 55);
+        verifyAddedPoint(55, 5, "NE", 10, 5, 46, 55);
+        verifyAddedPoint(5, 30, "W", 5, 20, 35, 40);
+        verifyAddedPoint(45, 30, "E", 10, 20, 36, 40);
+        verifyAddedPoint(5, 65, "SW", 5, 20, 35, 46);
+        verifyAddedPoint(20, 65, "S", 10, 20, 30, 46);
+        verifyAddedPoint(55, 65, "SE", 10, 20, 46, 46);
+    }
+
+    @Test
+    public void addLocation() {
+        title("add location");
+        a = Bounds.create(5, 5, 10, 10);
+        b = a.add(loc(20, 20));
+        print(b);
+        assertBoundsStats(b, 5, 5, 16, 16);
+    }
+
+    private void verifyAddedBounds(int nx, int ny, int nw, int nh, String where,
+                                   int ex, int ey, int ew, int eh) {
+        b = a.add(nx, ny, nw, nh);
+        print("  %s ... %s", where, b);
+        assertBoundsStats(b, ex, ey, ew, eh);
+    }
+
+    @Test
+    public void addBoundsByInts() {
+        title("addBoundsByInts:");
+        a = Bounds.create(100, 100, 300, 200);
+        verifyAddedBounds(250, 50, 50, 300, "N-S", 100, 50, 300, 300);
+        verifyAddedBounds(50, 150, 500, 50, "E-W", 50, 100, 500, 200);
+        verifyAddedBounds(50, 50, 100, 100, "NW", 50, 50, 350, 250);
+        verifyAddedBounds(350, 50, 100, 100, "NE", 100, 50, 350, 250);
+        verifyAddedBounds(50, 250, 100, 100, "SW", 50, 100, 350, 250);
+        verifyAddedBounds(350, 250, 100, 100, "SE", 100, 100, 350, 250);
+    }
+
+    @Test
+    public void addBoundsByIntsToEmptyBounds() {
+        title("add: bounds (by ints) to empty bounds");
+        a = Bounds.EMPTY_BOUNDS;
+        verifyAddedBounds(1, 2, 3, 4, "empty", 1, 2, 3, 4);
+    }
+
+    private void verifyAddedBoundsInstance(int nx, int ny, int nw, int nh,
+                                           String where,
+                                           int ex, int ey, int ew, int eh) {
+        b = a.add(Bounds.create(nx, ny, nw, nh));
+        print("  %s ... %s", where, b);
+        assertBoundsStats(b, ex, ey, ew, eh);
+    }
+
+    @Test
+    public void addBoundsByBounds() {
+        title("addBoundsByBounds:");
+        a = Bounds.create(100, 100, 300, 200);
+        verifyAddedBoundsInstance(250, 50, 50, 300, "N-S", 100, 50, 300, 300);
+        verifyAddedBoundsInstance(50, 150, 500, 50, "E-W", 50, 100, 500, 200);
+        verifyAddedBoundsInstance(50, 50, 100, 100, "NW", 50, 50, 350, 250);
+        verifyAddedBoundsInstance(350, 50, 100, 100, "NE", 100, 50, 350, 250);
+        verifyAddedBoundsInstance(50, 250, 100, 100, "SW", 50, 100, 350, 250);
+        verifyAddedBoundsInstance(350, 250, 100, 100, "SE", 100, 100, 350, 250);
+    }
+
+    @Test
+    public void addBoundsToEmptyBounds() {
+        title("add: bounds to empty bounds");
+        a = Bounds.EMPTY_BOUNDS.add(Bounds.create(1, 2, 3, 4));
+        print(a);
+        assertBoundsStats(a, 1, 2, 3, 4);
+    }
+
+    @Test
+    public void addEmptyBoundsToBounds() {
+        title("add: empty bounds to bounds");
+        a = Bounds.create(1, 2, 3, 4).add(Bounds.EMPTY_BOUNDS);
+        print(a);
+        assertBoundsStats(a, 1, 2, 3, 4);
+    }
+
+    @Test
+    public void expandEmptyBounds() {
+        title("expand: empty bounds");
+        // NOTE: can't expand empty bounds
+        a = Bounds.EMPTY_BOUNDS.expand(3);
+        print(a);
+        assertThat(a, is(equalTo(Bounds.EMPTY_BOUNDS)));
+    }
+
+    @Test
+    public void expandBoundsBigger() {
+        title("expand: bounds bigger");
+        a = Bounds.create(10, 10, 100, 100);
+        b = a.expand(3);
+        print(b);
+        assertBoundsStats(b, 7, 7, 106, 106);
+    }
+
+    @Test
+    public void expandBoundsZero() {
+        title("expand: bounds ZERO");
+        a = Bounds.create(10, 10, 100, 100);
+        b = a.expand(0);
+        print(b);
+        assertThat(b, is(equalTo(a)));
+    }
+
+    @Test
+    public void expandBoundsSmaller() {
+        title("expand: bounds smaller");
+        a = Bounds.create(10, 10, 100, 100);
+        b = a.expand(-3);
+        print(b);
+        assertBoundsStats(b, 13, 13, 94, 94);
+    }
+
+    @Test
+    public void expandJavadocExamples() {
+        title("expand: javadoc examples");
+        a = Bounds.create(10, 20, 100, 150);
+        assertThat(a.expand(2), is(equalTo(Bounds.create(8, 18, 104, 154))));
+        assertThat(a.expand(-3), is(equalTo(Bounds.create(13, 23, 94, 144))));
+    }
+
+    @Test
+    public void translateEmptyBounds() {
+        title("translate: empty bounds");
+        // NOTE: can't translate empty bounds
+        assertThat(Bounds.EMPTY_BOUNDS.translate(5, 6),
+                   is(equalTo(Bounds.EMPTY_BOUNDS)));
+    }
+
+    @Test
+    public void translateByZero() {
+        title("translate: by zero");
+        a = Bounds.create(1, 2, 4, 5);
+        b = a.translate(0, 0);
+        print(b);
+        assertThat(b, is(equalTo(a)));
+    }
+
+    @Test
+    public void translateSome() {
+        title("translate: some");
+        a = Bounds.create(10, 20, 40, 50);
+        b = a.translate(-5, 14);
+        print(b);
+        assertBoundsStats(b, 5, 34, 40, 50);
+    }
+
+    // TODO: unit tests for rotate() and intersect()
 
 }

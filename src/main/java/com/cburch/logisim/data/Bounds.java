@@ -367,9 +367,12 @@ public class Bounds {
         int retY = Math.min(y, this.y);
         int retWidth = Math.max(x + wid, this.x + this.wid) - retX;
         int retHeight = Math.max(y + ht, this.y + this.ht) - retY;
+
+        // TODO: review- why bother, when Bounds.create() uses a cache??
         if (retX == this.x && retY == this.y &&
                 retWidth == this.wid && retHeight == this.ht) {
             return this;
+
         } else {
             return Bounds.create(retX, retY, retWidth, retHeight);
         }
@@ -382,6 +385,7 @@ public class Bounds {
      * @param bd the bounds to add
      * @return the adjusted bounds
      */
+    // TODO: just call add(int,int,int,int)
     public Bounds add(Bounds bd) {
         if (this == EMPTY_BOUNDS) {
             return bd;
@@ -395,12 +399,15 @@ public class Bounds {
         int retY = Math.min(bd.y, this.y);
         int retWidth = Math.max(bd.x + bd.wid, this.x + this.wid) - retX;
         int retHeight = Math.max(bd.y + bd.ht, this.y + this.ht) - retY;
+
+        // TODO: review- why bother, when Bounds.create() uses a cache??
         if (retX == this.x && retY == this.y &&
                 retWidth == this.wid && retHeight == this.ht) {
             return this;
         } else if (retX == bd.x && retY == bd.y &&
                 retWidth == bd.wid && retHeight == bd.ht) {
             return bd;
+
         } else {
             return Bounds.create(retX, retY, retWidth, retHeight);
         }
@@ -414,7 +421,8 @@ public class Bounds {
      * For example:
      * <pre>
      *      Bounds b = Bounds.create(10, 20, 100, 150)   => (10,20): 100x150
-     *      Bounds x = b.expand(2)                       =>  (8,18): 104x154
+     *      Bounds bigger = b.expand(2)                  =>  (8,18): 104x154
+     *      Bounds smaller = b.expand(-3)                => (13,23): 94x144
      * </pre>
      * Note, however, that {@link #EMPTY_BOUNDS} cannot be expanded:
      * <pre>
