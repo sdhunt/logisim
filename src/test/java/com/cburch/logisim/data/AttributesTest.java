@@ -5,6 +5,7 @@
 
 package com.cburch.logisim.data;
 
+import org.junit.Ignore;
 import org.junit.Test;
 
 import javax.swing.*;
@@ -274,6 +275,7 @@ public class AttributesTest extends AbstractAttributeTest {
         assertThat(combo.getItemCount(), is(5));
     }
 
+    @Ignore("Slow to run ~ 1.735 secs")
     @Test
     public void fontAttribute() {
         title("font attribute");

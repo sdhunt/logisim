@@ -11,6 +11,7 @@ import com.cburch.logisim.gui.generic.ZoomModel;
 import com.cburch.logisim.gui.menu.LogisimMenuBar;
 import com.cburch.logisim.gui.menu.MenuSimulate;
 import com.meowster.test.AbstractTest;
+import org.junit.Ignore;
 import org.junit.Test;
 
 import java.beans.PropertyChangeListener;
@@ -118,6 +119,7 @@ public class CustomActionTest extends AbstractTest {
      *       Presumably it is the setup of the ZoomControl / MenuSimulate
      */
 
+    @Ignore("Slow to run ~ 1.476 secs")
     @Test
     public void zoomInAction() {
         title("zoom-in action");
@@ -129,6 +131,7 @@ public class CustomActionTest extends AbstractTest {
         assertThat(mockZoomer.weZoomedIn, is(true));
     }
 
+    @Ignore("Slow to run ~ 1.460 secs")
     @Test
     public void zoomOutAction() {
         title("zoom-out action");
