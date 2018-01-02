@@ -475,6 +475,68 @@ public class BoundsTest extends AbstractTest {
         assertBoundsStats(b, 5, 34, 40, 50);
     }
 
-    // TODO: unit tests for rotate() and intersect()
+    @Test
+    public void rotateEastToNorth() {
+        title("rotate: east-to-north");
+        a = Bounds.create(100, 100, 200, 100);
+        print(a);
+        int x = a.getCenterX();
+        int y = a.getCenterY();
+        b = a.rotate(Direction.EAST, Direction.NORTH, x, y);
+        print(b);
+        assertBoundsStats(b, 150, 50, 100, 200);
+    }
+
+    private void verifyRotateBounds(Direction toDir, int expX, int expY) {
+        b = a.rotate(Direction.EAST, toDir, a.getX(), a.getY());
+        print("  rotate %s ... %s", toDir, b);
+        assertBoundsStats(b, expX, expY, 100, 100);
+    }
+
+    @Test
+    public void rotateSquare() {
+        title("rotate: square...");
+        a = Bounds.create(300, 300, 100, 100);
+        verifyRotateBounds(Direction.NORTH, 300, 200);
+        verifyRotateBounds(Direction.WEST, 200, 200);
+        verifyRotateBounds(Direction.SOUTH, 200, 300);
+        verifyRotateBounds(Direction.EAST, 300, 300);
+    }
+
+    @Test
+    public void intersectMiddleLower() {
+        title("intersect: middle lower");
+        a = Bounds.create(10, 10, 40, 20);
+        b = a.intersect(Bounds.create(20, 20, 20, 30));
+        print(b);
+        assertBoundsStats(b, 20, 20, 20, 10);
+    }
+
+    @Test
+    public void intersectLeftSide() {
+        title("intersect: left side");
+        a = Bounds.create(10, 10, 40, 20);
+        b = a.intersect(Bounds.create(0, 0, 30, 40));
+        print(b);
+        assertBoundsStats(b, 10, 10, 20, 20);
+    }
+
+    @Test
+    public void intersectUpperRight() {
+        title("intersect: upper right");
+        a = Bounds.create(10, 10, 40, 20);
+        b = a.intersect(Bounds.create(30, -10, 30, 30));
+        print(b);
+        assertBoundsStats(b, 30, 10, 20, 10);
+    }
+
+    @Test
+    public void intersectNothing() {
+        title("intersect: nothing");
+        a = Bounds.create(10, 10, 40, 20);
+        b = a.intersect(Bounds.create(0, 0, 8, 50));
+        print(b);
+        assertThat(b, is(equalTo(Bounds.EMPTY_BOUNDS)));
+    }
 
 }
