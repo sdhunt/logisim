@@ -23,101 +23,40 @@ public class Bounds {
 
     private static final Cache cache = new Cache();
 
-    /**
-     * Returns a bounds object for the given location and size.
-     *
-     * @param x   the x-coordinate
-     * @param y   the y-coordinate
-     * @param wid the width
-     * @param ht  the height
-     * @return a corresponding bounds instance
-     */
-    public static Bounds create(int x, int y, int wid, int ht) {
-        // TODO: why are we not using a hashCode() implementation???
-        int hashCode = 13 * (31 * (31 * x + y) + wid) + ht;
-        Object cached = cache.get(hashCode);
-        if (cached != null) {
-            Bounds bds = (Bounds) cached;
-            if (bds.x == x && bds.y == y && bds.wid == wid && bds.ht == ht) {
-                return bds;
-            }
-
-        }
-        Bounds ret = new Bounds(x, y, wid, ht);
-        cache.put(hashCode, ret);
-        return ret;
-    }
-
-    /**
-     * Returns a bounds object corresponding to the given rectangle instance.
-     *
-     * @param rect the rectangle
-     * @return corresponding bounds
-     */
-    public static Bounds create(Rectangle rect) {
-        return create(rect.x, rect.y, rect.width, rect.height);
-    }
-
-    /**
-     * Returns a bounds object of width and height {@code 1x1}, located at
-     * the specified location.
-     *
-     * @param pt the location
-     * @return a corresponding bounds instance of size 1x1
-     */
-    public static Bounds create(Location pt) {
-        return create(pt.getX(), pt.getY(), 1, 1);
-    }
-
     private final int x;
     private final int y;
-    private final int wid;
-    private final int ht;
+    private final int width;
+    private final int height;
 
-    private Bounds(int x, int y, int wid, int ht) {
+    private Bounds(int x, int y, int width, int height) {
         this.x = x;
         this.y = y;
-        this.wid = wid;
-        this.ht = ht;
-
-        // TODO: following does not make sense: values are not used
-        if (wid < 0) {
-            {
-                x += wid / 2;
-            }
-            wid = 0;
-        }
-        if (ht < 0) {
-            {
-                y += ht / 2;
-            }
-            ht = 0;
-        }
+        this.width = width;
+        this.height = height;
     }
 
-    // TODO: re-write equals and hashCode to use standard template
     @Override
-    public boolean equals(Object other_obj) {
-        if (!(other_obj instanceof Bounds)) {
+    public boolean equals(Object o) {
+        if (this == o) {
+            return true;
+        }
+        if (o == null || getClass() != o.getClass()) {
             return false;
         }
 
-        Bounds other = (Bounds) other_obj;
-        return x == other.x && y == other.y
-                && wid == other.wid && ht == other.ht;
+        Bounds bounds = (Bounds) o;
+        return x == bounds.x && y == bounds.y &&
+                width == bounds.width && height == bounds.height;
     }
 
     @Override
     public int hashCode() {
-        int ret = 31 * x + y;
-        ret = 31 * ret + wid;
-        ret = 31 * ret + ht;
-        return ret;
+        return computeHashCode(x, y, width, height);
     }
 
     @Override
     public String toString() {
-        return "(" + x + "," + y + "): " + wid + "x" + ht;
+        return "(" + x + "," + y + "): " + width + "x" + height;
     }
 
     /**
@@ -144,7 +83,7 @@ public class Bounds {
      * @return the width
      */
     public int getWidth() {
-        return wid;
+        return width;
     }
 
     /**
@@ -153,7 +92,7 @@ public class Bounds {
      * @return the height
      */
     public int getHeight() {
-        return ht;
+        return height;
     }
 
     /**
@@ -162,7 +101,7 @@ public class Bounds {
      * @return x-coordinate of center
      */
     public int getCenterX() {
-        return x + wid / 2;
+        return x + width / 2;
     }
 
     /**
@@ -171,7 +110,7 @@ public class Bounds {
      * @return y-coordinate of center
      */
     public int getCenterY() {
-        return y + ht / 2;
+        return y + height / 2;
     }
 
     /**
@@ -180,31 +119,30 @@ public class Bounds {
      * @return an equivalent rectangle
      */
     public Rectangle toRectangle() {
-        return new Rectangle(x, y, wid, ht);
+        return new Rectangle(x, y, width, height);
     }
-
 
     /**
      * Returns true if the specified location lies within the bounds.
      *
-     * @param p the location to test
+     * @param loc the location to test
      * @return true, if p is within bounds; false otherwise
      */
-    public boolean contains(Location p) {
-        return contains(p.getX(), p.getY(), 0);
+    public boolean contains(Location loc) {
+        return contains(loc.getX(), loc.getY(), 0);
     }
 
     /**
      * Returns true if the specified location lies within the bounds, or
      * just outside the bounds (within the specified error).
      *
-     * @param p            the location to test
+     * @param loc          the location to test
      * @param allowedError the amount by which the location my lie outside the
      *                     bounds and still return a value of true
      * @return true, if p is within bounds (with allowed error); false otherwise
      */
-    public boolean contains(Location p, int allowedError) {
-        return contains(p.getX(), p.getY(), allowedError);
+    public boolean contains(Location loc, int allowedError) {
+        return contains(loc.getX(), loc.getY(), allowedError);
     }
 
     /**
@@ -230,49 +168,51 @@ public class Bounds {
      * (with allowed error); false otherwise
      */
     public boolean contains(int px, int py, int allowedError) {
-        return px >= x - allowedError && px < x + wid + allowedError
-                && py >= y - allowedError && py < y + ht + allowedError;
+        return px >= x - allowedError &&
+                px < x + width + allowedError &&
+                py >= y - allowedError &&
+                py < y + height + allowedError;
     }
 
     /**
      * Returns true if the specified bounds are wholly contained within this
      * bounds instance.
      *
-     * @param x   x-coordinate
-     * @param y   y-coordinate
-     * @param wid width
-     * @param ht  height
+     * @param x      x-coordinate
+     * @param y      y-coordinate
+     * @param width  width
+     * @param height height
      * @return true, if the specified bounds lie within these bounds; false
      * otherwise
      */
-    public boolean contains(int x, int y, int wid, int ht) {
-        int oth_x = (wid <= 0 ? x : x + wid - 1);
-        int oth_y = (ht <= 0 ? y : y + ht - 1);
-        return contains(x, y) && contains(oth_x, oth_y);
+    public boolean contains(int x, int y, int width, int height) {
+        int otherX = (width <= 0 ? x : x + width - 1);
+        int otherY = (height <= 0 ? y : y + height - 1);
+        return contains(x, y) && contains(otherX, otherY);
     }
 
     /**
      * Returns true if the specified bounds are wholly contained within this
      * bounds instance.
      *
-     * @param bd the bounds instance to test
+     * @param bounds the bounds instance to test
      * @return true, if the given bounds lie within these bounds; false
      * otherwise
      */
-    public boolean contains(Bounds bd) {
-        return contains(bd.x, bd.y, bd.wid, bd.ht);
+    public boolean contains(Bounds bounds) {
+        return contains(bounds.x, bounds.y, bounds.width, bounds.height);
     }
 
     /**
      * Returns true if the given location lies within this bound's border
      * (indicated by the fudge factor).
      *
-     * @param p     the point to test
-     * @param fudge the width of the border
-     * @return true, if p lies within the border; false otherwise
+     * @param loc   the point to test
+     * @param delta the allowed distance from the border
+     * @return true, if loc lies within the border; false otherwise
      */
-    public boolean borderContains(Location p, int fudge) {
-        return borderContains(p.getX(), p.getY(), fudge);
+    public boolean borderContains(Location loc, int delta) {
+        return borderContains(loc.getX(), loc.getY(), delta);
     }
 
     /**
@@ -281,19 +221,19 @@ public class Bounds {
      *
      * @param px    x-coordinate of the point to test
      * @param py    y-coordinate of the point to test
-     * @param fudge the width of the border
+     * @param delta the allowed distance from the border
      * @return true, if the point lies within the border; false otherwise
      */
-    public boolean borderContains(int px, int py, int fudge) {
-        int x1 = x + wid - 1;
-        int y1 = y + ht - 1;
-        if (Math.abs(px - x) <= fudge || Math.abs(px - x1) <= fudge) {
+    public boolean borderContains(int px, int py, int delta) {
+        int otherX = x + width - 1;
+        int otherY = y + height - 1;
+        if (Math.abs(px - x) <= delta || Math.abs(px - otherX) <= delta) {
             // maybe on east or west border?
-            return y - fudge <= py && py <= y1 + fudge;
+            return y - delta <= py && py <= otherY + delta;
         }
-        if (Math.abs(py - y) <= fudge || Math.abs(py - y1) <= fudge) {
+        if (Math.abs(py - y) <= delta || Math.abs(py - otherY) <= delta) {
             // maybe on north or south border?
-            return x - fudge <= px && px <= x1 + fudge;
+            return x - delta <= px && px <= otherX + delta;
         }
         return false;
     }
@@ -326,56 +266,50 @@ public class Bounds {
             return this;
         }
 
+        int newX = this.x;
+        int newWidth = this.width;
+        int newY = this.y;
+        int newHeight = this.height;
 
-        int new_x = this.x;
-        int new_wid = this.wid;
-        int new_y = this.y;
-        int new_ht = this.ht;
         if (x < this.x) {
-            new_x = x;
-            new_wid = (this.x + this.wid) - x;
-        } else if (x >= this.x + this.wid) {
-            new_x = this.x;
-            new_wid = x - this.x + 1;
+            newX = x;
+            newWidth = (this.x + this.width) - x;
+        } else if (x >= this.x + this.width) {
+            newX = this.x;
+            newWidth = x - this.x + 1;
         }
+
         if (y < this.y) {
-            new_y = y;
-            new_ht = (this.y + this.ht) - y;
-        } else if (y >= this.y + this.ht) {
-            new_y = this.y;
-            new_ht = y - this.y + 1;
+            newY = y;
+            newHeight = (this.y + this.height) - y;
+        } else if (y >= this.y + this.height) {
+            newY = this.y;
+            newHeight = y - this.y + 1;
         }
-        return create(new_x, new_y, new_wid, new_ht);
+        return create(newX, newY, newWidth, newHeight);
     }
 
     /**
      * Returns bounds representing this instance with the addition of the
      * given bounds.
      *
-     * @param x   x-coordinate of the bounds to add
-     * @param y   y-coordinate of the bounds to add
-     * @param wid width of the bounds to add
-     * @param ht  height of the bounds to add
+     * @param x      x-coordinate of the bounds to add
+     * @param y      y-coordinate of the bounds to add
+     * @param width  width of the bounds to add
+     * @param height height of the bounds to add
      * @return the adjusted bounds
      */
-    public Bounds add(int x, int y, int wid, int ht) {
+    public Bounds add(int x, int y, int width, int height) {
         if (this == EMPTY_BOUNDS) {
-            return Bounds.create(x, y, wid, ht);
+            return Bounds.create(x, y, width, height);
         }
 
-        int retX = Math.min(x, this.x);
-        int retY = Math.min(y, this.y);
-        int retWidth = Math.max(x + wid, this.x + this.wid) - retX;
-        int retHeight = Math.max(y + ht, this.y + this.ht) - retY;
+        int newX = Math.min(x, this.x);
+        int newY = Math.min(y, this.y);
+        int newWidth = Math.max(x + width, this.x + this.width) - newX;
+        int retHeight = Math.max(y + height, this.y + this.height) - newY;
 
-        // TODO: review- why bother, when Bounds.create() uses a cache??
-        if (retX == this.x && retY == this.y &&
-                retWidth == this.wid && retHeight == this.ht) {
-            return this;
-
-        } else {
-            return Bounds.create(retX, retY, retWidth, retHeight);
-        }
+        return Bounds.create(newX, newY, newWidth, retHeight);
     }
 
     /**
@@ -385,34 +319,9 @@ public class Bounds {
      * @param bd the bounds to add
      * @return the adjusted bounds
      */
-    // TODO: just call add(int,int,int,int)
     public Bounds add(Bounds bd) {
-        if (this == EMPTY_BOUNDS) {
-            return bd;
-        }
-
-        if (bd == EMPTY_BOUNDS) {
-            return this;
-        }
-
-        int retX = Math.min(bd.x, this.x);
-        int retY = Math.min(bd.y, this.y);
-        int retWidth = Math.max(bd.x + bd.wid, this.x + this.wid) - retX;
-        int retHeight = Math.max(bd.y + bd.ht, this.y + this.ht) - retY;
-
-        // TODO: review- why bother, when Bounds.create() uses a cache??
-        if (retX == this.x && retY == this.y &&
-                retWidth == this.wid && retHeight == this.ht) {
-            return this;
-        } else if (retX == bd.x && retY == bd.y &&
-                retWidth == bd.wid && retHeight == bd.ht) {
-            return bd;
-
-        } else {
-            return Bounds.create(retX, retY, retWidth, retHeight);
-        }
+        return bd == EMPTY_BOUNDS ? this : add(bd.x, bd.y, bd.width, bd.height);
     }
-
 
     /**
      * Returns bounds corresponding to an expansion of these bounds by
@@ -433,15 +342,10 @@ public class Bounds {
      * @return the expanded bounds
      */
     public Bounds expand(int d) {
-        if (this == EMPTY_BOUNDS) {
+        if (this == EMPTY_BOUNDS || d == 0) {
             return this;
         }
-
-        if (d == 0) {
-            return this;
-        }
-
-        return create(x - d, y - d, wid + 2 * d, ht + 2 * d);
+        return create(x - d, y - d, width + 2 * d, height + 2 * d);
     }
 
     /**
@@ -455,45 +359,49 @@ public class Bounds {
      * @return the translated bounds
      */
     public Bounds translate(int dx, int dy) {
-        if (this == EMPTY_BOUNDS) {
+        if (this == EMPTY_BOUNDS || (dx == 0 && dy == 0)) {
             return this;
         }
+        return create(x + dx, y + dy, width, height);
+    }
 
-        if (dx == 0 && dy == 0) {
-            return this;
+    private int normalizeDegrees(int degrees) {
+        int result = degrees;
+        while (result >= 360) {
+            result -= 360;
         }
-
-        return create(x + dx, y + dy, wid, ht);
+        while (result < 0) {
+            result += 360;
+        }
+        return result;
     }
 
     /**
      * Returns bounds corresponding to a rotation of these bounds around
-     * {@code (xc,yc)}, for the given from and to directions. TODO: better wording
+     * {@code (xc,yc)}, using the given from and to directions to compute
+     * the angle of rotation.
      *
-     * @param from direction this instance is facing
-     * @param to   direction the returned bounds should be facing
+     * @param from initial direction of facing
+     * @param to   final direction of facing
      * @param xc   x-coordinate of center of rotation
      * @param yc   y-coordinate of center of rotation
      * @return the rotated bounds
      */
-    // rotates this around (xc,yc) assuming that this is facing in the
-    // from direction and the returned bounds should face in the to direction.
     public Bounds rotate(Direction from, Direction to, int xc, int yc) {
-        int degrees = to.toDegrees() - from.toDegrees();
-        while (degrees >= 360) degrees -= 360;
-        while (degrees < 0) degrees += 360;
+        int degrees = normalizeDegrees(to.toDegrees() - from.toDegrees());
 
         int dx = x - xc;
         int dy = y - yc;
         if (degrees == 90) {
-            return create(xc + dy, yc - dx - wid, ht, wid);
-        } else if (degrees == 180) {
-            return create(xc - dx - wid, yc - dy - ht, wid, ht);
-        } else if (degrees == 270) {
-            return create(xc - dy - ht, yc + dx, ht, wid);
-        } else {
-            return this;
+            return create(xc + dy, yc - dx - width, height, width);
         }
+        if (degrees == 180) {
+            return create(xc - dx - width, yc - dy - height, width, height);
+        }
+        if (degrees == 270) {
+            return create(xc - dy - height, yc + dx, height, width);
+        }
+        return this;
     }
 
     /**
@@ -504,34 +412,91 @@ public class Bounds {
      * @return the intersection of the two bounds
      */
     public Bounds intersect(Bounds other) {
-        int x0 = this.x;
-        int y0 = this.y;
-        int x1 = x0 + this.wid;
-        int y1 = y0 + this.ht;
+        int x0 = x;
+        int y0 = y;
+        int x1 = x0 + width;
+        int y1 = y0 + height;
         int x2 = other.x;
         int y2 = other.y;
-        int x3 = x2 + other.wid;
-        int y3 = y2 + other.ht;
+        int x3 = x2 + other.width;
+        int y3 = y2 + other.height;
+
         if (x2 > x0) {
             x0 = x2;
         }
-
         if (y2 > y0) {
             y0 = y2;
         }
-
         if (x3 < x1) {
             x1 = x3;
         }
-
         if (y3 < y1) {
             y1 = y3;
         }
 
         if (x1 < x0 || y1 < y0) {
             return EMPTY_BOUNDS;
-        } else {
-            return create(x0, y0, x1 - x0, y1 - y0);
         }
+        return create(x0, y0, x1 - x0, y1 - y0);
+    }
+
+
+    private static int computeHashCode(int x, int y, int w, int h) {
+        int result = x;
+        result = 31 * result + y;
+        result = 31 * result + w;
+        result = 31 * result + h;
+        return result;
+    }
+
+    /**
+     * Returns a bounds object for the given location and size.
+     *
+     * @param x      the x-coordinate
+     * @param y      the y-coordinate
+     * @param width  the width
+     * @param height the height
+     * @return a corresponding bounds instance
+     */
+    public static Bounds create(int x, int y, int width, int height) {
+        int hashCode = computeHashCode(x, y, width, height);
+
+        // NOTE: Cache class should be implementing the following code, not
+        //        the cache consumer.
+        // TODO: re-write Cache to make the caching transparent from the call;
+        //        perhaps make Cache generic so we can have Cache<Bounds> ?
+
+        Object cached = cache.get(hashCode);
+        if (cached != null) {
+            Bounds bounds = (Bounds) cached;
+            if (bounds.x == x && bounds.y == y &&
+                    bounds.width == width && bounds.height == height) {
+                return bounds;
+            }
+        }
+        Bounds result = new Bounds(x, y, width, height);
+        cache.put(hashCode, result);
+        return result;
+    }
+
+    /**
+     * Returns a bounds object corresponding to the given rectangle instance.
+     *
+     * @param rect the rectangle
+     * @return corresponding bounds
+     */
+    public static Bounds create(Rectangle rect) {
+        return create(rect.x, rect.y, rect.width, rect.height);
+    }
+
+    /**
+     * Returns a bounds object of width and height {@code 1x1}, located at
+     * the specified location.
+     *
+     * @param loc the location
+     * @return a corresponding bounds instance of size 1x1
+     */
+    public static Bounds create(Location loc) {
+        return create(loc.getX(), loc.getY(), 1, 1);
     }
 }
